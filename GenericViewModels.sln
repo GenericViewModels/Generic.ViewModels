@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2024
+VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Generic.ViewModels", "Generic.ViewModels\Generic.ViewModels.csproj", "{8192DA5A-3FDA-4CC3-B2C6-524FD35C388B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Generic.ViewModels.Tests", "Generic.ViewModels.Tests\Generic.ViewModels.Tests.csproj", "{A1EA6002-CAE5-47A8-A0B7-322E99ED8CED}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{8192DA5A-3FDA-4CC3-B2C6-524FD35C388B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8192DA5A-3FDA-4CC3-B2C6-524FD35C388B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8192DA5A-3FDA-4CC3-B2C6-524FD35C388B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1EA6002-CAE5-47A8-A0B7-322E99ED8CED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1EA6002-CAE5-47A8-A0B7-322E99ED8CED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1EA6002-CAE5-47A8-A0B7-322E99ED8CED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1EA6002-CAE5-47A8-A0B7-322E99ED8CED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
