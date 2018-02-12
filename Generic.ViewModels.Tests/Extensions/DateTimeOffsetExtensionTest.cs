@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using GenericViewModels.Extensions;
+using System;
 using Xunit;
-using GenericViewModels.Extensions;
 
 
 namespace Generic.ViewModels.Tests.Extensions
@@ -50,13 +48,7 @@ namespace Generic.ViewModels.Tests.Extensions
             Assert.Equal(expected, actual);
         }
 
-        private static IEnumerable<object[]> GetDates()
-        {
-
-        }
-
         [Theory]
-        [MemberData()]
         [InlineData(2018, 2, 4, 2018, 2, 5)]
         [InlineData(2018, 2, 5, 2018, 2, 12)]
         [InlineData(2018, 2, 6, 2018, 2, 12)]
