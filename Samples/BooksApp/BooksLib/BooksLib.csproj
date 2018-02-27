@@ -5,11 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Generic.ViewModels" Version="0.1.3" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\Generic.ViewModels\Generic.ViewModels.csproj" />
   </ItemGroup>
 
 </Project>

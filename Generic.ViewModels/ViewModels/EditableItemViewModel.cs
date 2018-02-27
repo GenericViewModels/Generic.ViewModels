@@ -56,6 +56,10 @@ namespace GenericViewModels.ViewModels
 
         #region Copy Item for Edit Mode
         private TItem _editItem;
+        /// <summary>
+        /// EditItem returns the Item in read mode
+        /// and contains a copy of the Item in edit mode
+        /// </summary>
         public TItem EditItem
         {
             get => _editItem ?? Item;
