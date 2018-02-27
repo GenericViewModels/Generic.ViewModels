@@ -8,10 +8,7 @@
     {
         public ItemViewModel() { }
 
-        public ItemViewModel(T item)
-        {
-            Item = item;
-        }
+        public ItemViewModel(T item) => Item = item;
 
         private T _item;
         public virtual T Item

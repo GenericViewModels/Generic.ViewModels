@@ -59,7 +59,6 @@ namespace GenericViewModels.ViewModels
                 if (!EqualityComparer<TItem>.Default.Equals(SelectedItem, value?.Item)) 
                 {
                     SelectedItem = value?.Item;
-                    OnPropertyChanged();
                 }
             }
         }
@@ -73,10 +72,8 @@ namespace GenericViewModels.ViewModels
             }
         }
 
-        protected async Task OnRefreshAsync()
-        {
+        protected async Task OnRefreshAsync() => 
             await _itemsService.RefreshAsync();
-        }
 
         public abstract void OnAdd();
     }
