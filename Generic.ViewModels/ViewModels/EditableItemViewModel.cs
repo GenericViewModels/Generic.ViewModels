@@ -71,6 +71,10 @@ namespace GenericViewModels.ViewModels
         public abstract TItem CreateCopy(TItem item);
 
         #region Overrides Needed By Derived Class
+        /// <summary>
+        /// I
+        /// </summary>
+        /// <returns></returns>
         public abstract Task OnSaveAsync();
         public virtual Task OnEndEditAsync() => Task.CompletedTask;
         protected abstract void OnAdd();

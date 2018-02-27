@@ -45,6 +45,7 @@ namespace GenericViewModels.ViewModels
                 {
                     _itemsService.SelectedItem = value;
                     OnPropertyChanged();
+                    OnPropertyChanged(nameof(SelectedItemViewModel));
                 }
             }
         }
@@ -68,6 +69,7 @@ namespace GenericViewModels.ViewModels
             using (StartInProgress())
             {
                 await OnRefreshAsync();
+                SelectedItem = _itemsService.Items.FirstOrDefault();
             }
         }
 
