@@ -16,5 +16,8 @@ namespace GenericViewModels.Services
 
         T SelectedItem { get; set; }
         event EventHandler<T> SelectedItemChanged;
+
+        Func<T, bool> Filter { get; set; }
+        void ExecuteFilter();
     }
 }
