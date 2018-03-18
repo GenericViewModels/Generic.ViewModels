@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Prism.Mvvm;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,7 +14,7 @@ namespace GenericViewModels.Core
         public bool HasErrors
         {
             get => _hasErrors;
-            set => Set(ref _hasErrors, value);
+            set => SetProperty(ref _hasErrors, value);
         }
 
         public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;

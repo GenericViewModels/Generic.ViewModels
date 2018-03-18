@@ -14,7 +14,7 @@
         public virtual T Item
         {
             get => _item;
-            set => Set(ref _item, value);
+            set => SetProperty(ref _item, value);
         }
     }
 }

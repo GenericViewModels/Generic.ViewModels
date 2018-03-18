@@ -1,5 +1,5 @@
-﻿using GenericViewModels.Core;
-using GenericViewModels.Services;
+﻿using GenericViewModels.Services;
+using Prism.Commands;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -19,15 +19,15 @@ namespace GenericViewModels.ViewModels
 
             _itemsService.Items.CollectionChanged += (sender, e) =>
             {
-                base.OnPropertyChanged(nameof(ItemsViewModels));
+                base.RaisePropertyChanged(nameof(ItemsViewModels));
             };
 
-            RefreshCommand = new RelayCommand(OnRefresh);
-            AddCommand = new RelayCommand(OnAdd);
+            RefreshCommand = new DelegateCommand(OnRefresh);
+            AddCommand = new DelegateCommand(OnAdd);
         }
 
-        public RelayCommand RefreshCommand { get; }
-        public RelayCommand AddCommand { get; }
+        public DelegateCommand RefreshCommand { get; }
+        public DelegateCommand AddCommand { get; }
 
         public ObservableCollection<TItem> Items => _itemsService.Items;
 
@@ -44,8 +44,8 @@ namespace GenericViewModels.ViewModels
                 if (!EqualityComparer<TItem>.Default.Equals(_itemsService.SelectedItem, value))
                 {
                     _itemsService.SelectedItem = value;
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(SelectedItemViewModel));
+                    RaisePropertyChanged();
+                    RaisePropertyChanged(nameof(SelectedItemViewModel));
                 }
             }
         }

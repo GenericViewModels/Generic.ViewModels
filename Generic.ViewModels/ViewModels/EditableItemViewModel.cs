@@ -1,5 +1,5 @@
-﻿using GenericViewModels.Core;
-using GenericViewModels.Services;
+﻿using GenericViewModels.Services;
+using Prism.Commands;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
@@ -19,20 +19,20 @@ namespace GenericViewModels.ViewModels
             {
                 if (e.PropertyName == nameof(Item))
                 {
-                    OnPropertyChanged(nameof(EditItem));
+                    RaisePropertyChanged(nameof(EditItem));
                 }
             };
 
-            EditCommand = new RelayCommand(BeginEdit, () => IsReadMode);
-            CancelCommand = new RelayCommand(CancelEdit, () => IsEditMode);
-            SaveCommand = new RelayCommand(EndEdit, () => IsEditMode);
-            AddCommand = new RelayCommand(OnAdd, () => IsReadMode);
+            EditCommand = new DelegateCommand(BeginEdit, () => IsReadMode);
+            CancelCommand = new DelegateCommand(CancelEdit, () => IsEditMode);
+            SaveCommand = new DelegateCommand(EndEdit, () => IsEditMode);
+            AddCommand = new DelegateCommand(OnAdd, () => IsReadMode);
         }
 
-        public RelayCommand AddCommand { get; }
-        public RelayCommand EditCommand { get; }
-        public RelayCommand CancelCommand { get; }
-        public RelayCommand SaveCommand { get; }
+        public DelegateCommand AddCommand { get; }
+        public DelegateCommand EditCommand { get; }
+        public DelegateCommand CancelCommand { get; }
+        public DelegateCommand SaveCommand { get; }
 
         #region Edit / Read Mode
         private bool _isEditMode;
@@ -42,12 +42,12 @@ namespace GenericViewModels.ViewModels
             get => _isEditMode;
             set
             {
-                if (Set(ref _isEditMode, value))
+                if (SetProperty(ref _isEditMode, value))
                 {
-                    OnPropertyChanged(nameof(IsReadMode));
-                    CancelCommand.OnCanExecuteChanged();
-                    SaveCommand.OnCanExecuteChanged();
-                    EditCommand.OnCanExecuteChanged();
+                    RaisePropertyChanged(nameof(IsReadMode));
+                    CancelCommand.RaiseCanExecuteChanged();
+                    SaveCommand.RaiseCanExecuteChanged();
+                    EditCommand.RaiseCanExecuteChanged();
                 }
             }
         }
@@ -63,7 +63,7 @@ namespace GenericViewModels.ViewModels
         public TItem EditItem
         {
             get => _editItem ?? Item;
-            set => Set(ref _editItem, value);
+            set => SetProperty(ref _editItem, value);
         }
 
         #endregion
