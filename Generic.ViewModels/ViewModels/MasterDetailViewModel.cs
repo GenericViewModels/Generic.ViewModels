@@ -35,7 +35,6 @@ namespace GenericViewModels.ViewModels
 
         public virtual IEnumerable<TItemViewModel> ItemsViewModels => Items.Select(item => ToViewModel(item));
 
-        protected TItem _selectedItem;
         public virtual TItem SelectedItem
         {
             get => _itemsService.SelectedItem;
@@ -50,7 +49,6 @@ namespace GenericViewModels.ViewModels
             }
         }
 
-        protected TItemViewModel _selectedItemViewModel;
         public virtual TItemViewModel SelectedItemViewModel
         {
             get => ToViewModel(_itemsService.SelectedItem);

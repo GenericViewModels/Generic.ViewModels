@@ -1,5 +1,6 @@
 ﻿using GenericViewModels.Services;
 using Prism.Commands;
+using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
@@ -12,7 +13,7 @@ namespace GenericViewModels.ViewModels
 
         public EditableItemViewModel(IItemsService<TItem> itemsService)
         {
-            _itemsService = itemsService;
+            _itemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
             Item = _itemsService.SelectedItem;
 
             PropertyChanged += (sender, e) =>
@@ -109,6 +110,7 @@ namespace GenericViewModels.ViewModels
                 EditItem = default(TItem);
                 IsEditMode = false;
                 await _itemsService.RefreshAsync();
+                Item = _itemsService.SelectedItem;
                 await OnEndEditAsync();
             }
         }
