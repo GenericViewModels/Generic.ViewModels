@@ -1,5 +1,6 @@
-﻿using GenericViewModels.Core;
-using GenericViewModels.Services;
+﻿using GenericViewModels.Services;
+using Prism.Commands;
+using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
@@ -12,27 +13,27 @@ namespace GenericViewModels.ViewModels
 
         public EditableItemViewModel(IItemsService<TItem> itemsService)
         {
-            _itemsService = itemsService;
+            _itemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
             Item = _itemsService.SelectedItem;
 
             PropertyChanged += (sender, e) =>
             {
                 if (e.PropertyName == nameof(Item))
                 {
-                    OnPropertyChanged(nameof(EditItem));
+                    RaisePropertyChanged(nameof(EditItem));
                 }
             };
 
-            EditCommand = new RelayCommand(BeginEdit, () => IsReadMode);
-            CancelCommand = new RelayCommand(CancelEdit, () => IsEditMode);
-            SaveCommand = new RelayCommand(EndEdit, () => IsEditMode);
-            AddCommand = new RelayCommand(OnAdd, () => IsReadMode);
+            EditCommand = new DelegateCommand(BeginEdit, () => IsReadMode);
+            CancelCommand = new DelegateCommand(CancelEdit, () => IsEditMode);
+            SaveCommand = new DelegateCommand(EndEdit, () => IsEditMode);
+            AddCommand = new DelegateCommand(OnAdd, () => IsReadMode);
         }
 
-        public RelayCommand AddCommand { get; }
-        public RelayCommand EditCommand { get; }
-        public RelayCommand CancelCommand { get; }
-        public RelayCommand SaveCommand { get; }
+        public DelegateCommand AddCommand { get; }
+        public DelegateCommand EditCommand { get; }
+        public DelegateCommand CancelCommand { get; }
+        public DelegateCommand SaveCommand { get; }
 
         #region Edit / Read Mode
         private bool _isEditMode;
@@ -42,12 +43,12 @@ namespace GenericViewModels.ViewModels
             get => _isEditMode;
             set
             {
-                if (Set(ref _isEditMode, value))
+                if (SetProperty(ref _isEditMode, value))
                 {
-                    OnPropertyChanged(nameof(IsReadMode));
-                    CancelCommand.OnCanExecuteChanged();
-                    SaveCommand.OnCanExecuteChanged();
-                    EditCommand.OnCanExecuteChanged();
+                    RaisePropertyChanged(nameof(IsReadMode));
+                    CancelCommand.RaiseCanExecuteChanged();
+                    SaveCommand.RaiseCanExecuteChanged();
+                    EditCommand.RaiseCanExecuteChanged();
                 }
             }
         }
@@ -56,10 +57,14 @@ namespace GenericViewModels.ViewModels
 
         #region Copy Item for Edit Mode
         private TItem _editItem;
+        /// <summary>
+        /// EditItem returns the Item in read mode
+        /// and contains a copy of the Item in edit mode
+        /// </summary>
         public TItem EditItem
         {
             get => _editItem ?? Item;
-            set => Set(ref _editItem, value);
+            set => SetProperty(ref _editItem, value);
         }
 
         #endregion
@@ -67,6 +72,10 @@ namespace GenericViewModels.ViewModels
         public abstract TItem CreateCopy(TItem item);
 
         #region Overrides Needed By Derived Class
+        /// <summary>
+        /// I
+        /// </summary>
+        /// <returns></returns>
         public abstract Task OnSaveAsync();
         public virtual Task OnEndEditAsync() => Task.CompletedTask;
         protected abstract void OnAdd();
@@ -101,6 +110,7 @@ namespace GenericViewModels.ViewModels
                 EditItem = default(TItem);
                 IsEditMode = false;
                 await _itemsService.RefreshAsync();
+                Item = _itemsService.SelectedItem;
                 await OnEndEditAsync();
             }
         }
