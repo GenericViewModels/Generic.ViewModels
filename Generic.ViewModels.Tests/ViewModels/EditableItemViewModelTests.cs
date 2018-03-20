@@ -2,10 +2,7 @@
 using GenericViewModels.ViewModels;
 using Moq;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -24,13 +21,23 @@ namespace Generic.ViewModels.Tests.ViewModels
             {
             }
 
-            public override AnItem CreateCopy(AnItem item) => new AnItem() { Text = item?.Text ?? "empty" };
+            protected override AnItem CreateCopy(AnItem item) => new AnItem() { Text = item?.Text ?? "empty" };
             protected override void OnAdd() => throw new NotImplementedException();
-            public override Task OnSaveAsync()
+            protected override Task OnSaveAsync()
             {
                 Item.Text = EditItem.Text;
                 return Task.CompletedTask;
             }
+
+            public bool IsDeleted { get; private set; } = false;
+            protected override Task OnDeleteAsync()
+            {
+                IsDeleted = true;
+                return Task.CompletedTask;
+            }
+
+            public bool SureToDelete { get; set; }
+            protected override Task<bool> AreYouSure() => Task.FromResult(SureToDelete);
         }
 
         public EditableItemViewModelTests()
@@ -59,10 +66,10 @@ namespace Generic.ViewModels.Tests.ViewModels
         {
             // arrange               
             var viewModel = new TestEditableItemViewModel(_itemsService);
-            viewModel.IsEditMode = false;
             bool cancelCommandFired = false;
             bool saveCommandFired = false;
             bool editCommandFired = false;
+            bool deleteCommandFired = false;
 
             viewModel.CancelCommand.CanExecuteChanged += (sender, e) =>
                 cancelCommandFired = true;
@@ -70,14 +77,17 @@ namespace Generic.ViewModels.Tests.ViewModels
                 saveCommandFired = true;
             viewModel.EditCommand.CanExecuteChanged += (sender, e) =>
                 editCommandFired = true;
+            viewModel.DeleteCommand.CanExecuteChanged += (sender, e) =>
+                deleteCommandFired = true;
             // act
-            viewModel.IsEditMode = true;
+            viewModel.BeginEdit();
 
             // assert
             Assert.True(viewModel.IsEditMode);
             Assert.True(cancelCommandFired);
             Assert.True(saveCommandFired);
             Assert.True(editCommandFired);
+            Assert.True(deleteCommandFired);
         }
 
         [Fact]
@@ -154,6 +164,34 @@ namespace Generic.ViewModels.Tests.ViewModels
 
             Assert.Equal("new text", viewModel.EditItem.Text);
             Assert.Equal(viewModel.EditItem.Text, viewModel.Item.Text);
+        }
+
+        [Fact]
+        public void DeleteCommand_DoNothingOnReadMode()
+        {
+            var viewModel = new TestEditableItemViewModel(_itemsService);
+            viewModel.DeleteCommand.Execute();
+            Assert.False(viewModel.IsDeleted);
+        }
+
+        [Fact]
+        public void DeleteCommand_CallOnDeleteAsyncNotSure()
+        {
+            var viewModel = new TestEditableItemViewModel(_itemsService);
+            viewModel.SureToDelete = false;
+            viewModel.BeginEdit();
+            viewModel.DeleteCommand.Execute();
+            Assert.False(viewModel.IsDeleted);
+        }
+
+        [Fact]
+        public void DeleteCommand_CallOnDeleteAsyncSure()
+        {
+            var viewModel = new TestEditableItemViewModel(_itemsService);
+            viewModel.SureToDelete = true;
+            viewModel.BeginEdit();
+            viewModel.DeleteCommand.Execute();
+            Assert.True(viewModel.IsDeleted);
         }
     }
 }

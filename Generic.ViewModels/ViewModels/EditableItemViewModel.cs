@@ -28,12 +28,32 @@ namespace GenericViewModels.ViewModels
             CancelCommand = new DelegateCommand(CancelEdit, () => IsEditMode);
             SaveCommand = new DelegateCommand(EndEdit, () => IsEditMode);
             AddCommand = new DelegateCommand(OnAdd, () => IsReadMode);
+            DeleteCommand = new DelegateCommand(OnDelete, () => IsEditMode);
         }
 
         public DelegateCommand AddCommand { get; }
         public DelegateCommand EditCommand { get; }
         public DelegateCommand CancelCommand { get; }
         public DelegateCommand SaveCommand { get; }
+        public DelegateCommand DeleteCommand { get; }
+
+        protected abstract Task OnDeleteAsync();
+        protected virtual Task<bool> AreYouSure() => Task.FromResult(false);
+        private async void OnDelete()
+        {
+            if (IsReadMode) return;
+            if (!await AreYouSure()) return;
+
+            using (StartInProgress())
+            {
+                await OnDeleteAsync();
+                EditItem = default(TItem);
+                IsEditMode = false;
+                await _itemsService.RefreshAsync();
+                Item = _itemsService.SelectedItem;
+                await OnEndEditAsync();
+            }
+        }
 
         #region Edit / Read Mode
         private bool _isEditMode;
@@ -41,7 +61,7 @@ namespace GenericViewModels.ViewModels
         public bool IsEditMode
         {
             get => _isEditMode;
-            set
+            private set
             {
                 if (SetProperty(ref _isEditMode, value))
                 {
@@ -49,6 +69,7 @@ namespace GenericViewModels.ViewModels
                     CancelCommand.RaiseCanExecuteChanged();
                     SaveCommand.RaiseCanExecuteChanged();
                     EditCommand.RaiseCanExecuteChanged();
+                    DeleteCommand.RaiseCanExecuteChanged();
                 }
             }
         }
@@ -69,15 +90,15 @@ namespace GenericViewModels.ViewModels
 
         #endregion
 
-        public abstract TItem CreateCopy(TItem item);
+        protected abstract TItem CreateCopy(TItem item);
 
         #region Overrides Needed By Derived Class
         /// <summary>
         /// I
         /// </summary>
         /// <returns></returns>
-        public abstract Task OnSaveAsync();
-        public virtual Task OnEndEditAsync() => Task.CompletedTask;
+        protected abstract Task OnSaveAsync();
+        protected virtual Task OnEndEditAsync() => Task.CompletedTask;
         protected abstract void OnAdd();
 
         #endregion
