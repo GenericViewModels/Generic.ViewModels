@@ -1,4 +1,4 @@
-﻿using GenericViewModels.Core;
+﻿using Prism.Mvvm;
 
 namespace BooksLib.Models
 {
@@ -10,14 +10,14 @@ namespace BooksLib.Models
         public string Title
         {
             get => _title;
-            set => Set(ref _title, value);
+            set => SetProperty(ref _title, value);
         }
 
         private string _publisher;
         public string Publisher
         {
             get => _publisher;
-            set => Set(ref _publisher, value);
+            set => SetProperty(ref _publisher, value);
         }
 
         public override string ToString() => Title;

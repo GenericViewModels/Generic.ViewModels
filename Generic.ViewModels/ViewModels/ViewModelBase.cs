@@ -1,4 +1,4 @@
-﻿using GenericViewModels.Core;
+﻿using Prism.Mvvm;
 using System;
 using System.Threading;
 
@@ -26,12 +26,12 @@ namespace GenericViewModels.ViewModels
             if (set)
             {
                 Interlocked.Increment(ref _inProgressCounter);
-                OnPropertyChanged(nameof(InProgress));
+                RaisePropertyChanged(nameof(InProgress));
             }
             else
             {
                 Interlocked.Decrement(ref _inProgressCounter);
-                OnPropertyChanged(nameof(InProgress));
+                RaisePropertyChanged(nameof(InProgress));
             }
         }
 
@@ -44,14 +44,14 @@ namespace GenericViewModels.ViewModels
         public bool HasError
         {
             get => _hasError;
-            set => Set(ref _hasError, value);
+            set => SetProperty(ref _hasError, value);
         }
 
         private string _errorMessage;
         public string ErrorMessage
         {
             get => _errorMessage;
-            set => Set(ref _errorMessage, value);
+            set => SetProperty(ref _errorMessage, value);
         }
     }
 }

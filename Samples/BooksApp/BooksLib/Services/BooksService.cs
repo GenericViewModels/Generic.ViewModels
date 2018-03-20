@@ -1,6 +1,6 @@
 ﻿using BooksLib.Models;
-using GenericViewModels.Core;
 using GenericViewModels.Services;
+using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -29,7 +29,7 @@ namespace BooksLib.Services
             get => _selectedItem;
             set
             {
-                if (Set(ref _selectedItem, value))
+                if (SetProperty(ref _selectedItem, value))
                 {
                     SelectedItemChanged?.Invoke(this, _selectedItem);
                 }
