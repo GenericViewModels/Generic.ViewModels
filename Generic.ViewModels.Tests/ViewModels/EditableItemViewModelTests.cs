@@ -28,7 +28,7 @@ namespace Generic.ViewModels.Tests.ViewModels
             protected override void OnAdd() => throw new NotImplementedException();
             public override Task OnSaveAsync()
             {
-                Item = EditItem;
+                Item.Text = EditItem.Text;
                 return Task.CompletedTask;
             }
         }
@@ -39,7 +39,7 @@ namespace Generic.ViewModels.Tests.ViewModels
             {
                 new AnItem { Text = "first" },
                 new AnItem { Text = "second" },
-                new AnItem { Text = "thirs" }
+                new AnItem { Text = "third" }
             };
             var mockingObject = new Mock<IItemsService<AnItem>>();
             mockingObject.Setup(service => service.RefreshAsync())
