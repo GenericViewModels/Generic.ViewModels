@@ -1,7 +1,7 @@
 ﻿using BooksLib.Models;
-using GenericViewModels.Core;
 using GenericViewModels.Services;
 using GenericViewModels.ViewModels;
+using Prism.Commands;
 
 namespace BooksLib.ViewModels
 {
@@ -14,10 +14,10 @@ namespace BooksLib.ViewModels
             : base(book)
         {
             _booksService = booksService;
-            DeleteBookCommand = new RelayCommand(OnDeleteBook);
+            DeleteBookCommand = new DelegateCommand(OnDeleteBook);
         }
 
-        public RelayCommand DeleteBookCommand { get; set; }
+        public DelegateCommand DeleteBookCommand { get; set; }
 
         private async void OnDeleteBook()
         {
