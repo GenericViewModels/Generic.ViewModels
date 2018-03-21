@@ -69,7 +69,6 @@ namespace Generic.ViewModels.Tests.ViewModels
             bool cancelCommandFired = false;
             bool saveCommandFired = false;
             bool editCommandFired = false;
-            bool deleteCommandFired = false;
 
             viewModel.CancelCommand.CanExecuteChanged += (sender, e) =>
                 cancelCommandFired = true;
@@ -77,8 +76,6 @@ namespace Generic.ViewModels.Tests.ViewModels
                 saveCommandFired = true;
             viewModel.EditCommand.CanExecuteChanged += (sender, e) =>
                 editCommandFired = true;
-            viewModel.DeleteCommand.CanExecuteChanged += (sender, e) =>
-                deleteCommandFired = true;
             // act
             viewModel.BeginEdit();
 
@@ -87,7 +84,6 @@ namespace Generic.ViewModels.Tests.ViewModels
             Assert.True(cancelCommandFired);
             Assert.True(saveCommandFired);
             Assert.True(editCommandFired);
-            Assert.True(deleteCommandFired);
         }
 
         [Fact]
@@ -181,7 +177,6 @@ namespace Generic.ViewModels.Tests.ViewModels
             {
                 SureToDelete = false
             };
-            viewModel.BeginEdit();
             viewModel.DeleteCommand.Execute();
             Assert.False(viewModel.IsDeleted);
         }
@@ -193,10 +188,8 @@ namespace Generic.ViewModels.Tests.ViewModels
             {
                 SureToDelete = true
             };
-            viewModel.BeginEdit();
             viewModel.DeleteCommand.Execute();
             Assert.True(viewModel.IsDeleted);
-            Assert.True(viewModel.IsReadMode);
         }
     }
 }

@@ -28,7 +28,7 @@ namespace GenericViewModels.ViewModels
             CancelCommand = new DelegateCommand(CancelEdit, () => IsEditMode);
             SaveCommand = new DelegateCommand(EndEdit, () => IsEditMode);
             AddCommand = new DelegateCommand(OnAdd, () => IsReadMode);
-            DeleteCommand = new DelegateCommand(OnDelete, () => IsEditMode);
+            DeleteCommand = new DelegateCommand(OnDelete);
         }
 
         public DelegateCommand AddCommand { get; }
@@ -41,14 +41,11 @@ namespace GenericViewModels.ViewModels
         protected virtual Task<bool> AreYouSureAsync() => Task.FromResult(false);
         private async void OnDelete()
         {
-            if (IsReadMode) return;
             if (!await AreYouSureAsync()) return;
 
             using (StartInProgress())
             {
                 await OnDeleteAsync();
-                EditItem = default(TItem);
-                IsEditMode = false;
                 await _itemsService.RefreshAsync();
                 Item = _itemsService.SelectedItem;
                 await OnEndEditAsync();
@@ -69,7 +66,6 @@ namespace GenericViewModels.ViewModels
                     CancelCommand.RaiseCanExecuteChanged();
                     SaveCommand.RaiseCanExecuteChanged();
                     EditCommand.RaiseCanExecuteChanged();
-                    DeleteCommand.RaiseCanExecuteChanged();
                 }
             }
         }
