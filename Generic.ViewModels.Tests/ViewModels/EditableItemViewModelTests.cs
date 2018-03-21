@@ -37,7 +37,7 @@ namespace Generic.ViewModels.Tests.ViewModels
             }
 
             public bool SureToDelete { get; set; }
-            protected override Task<bool> AreYouSure() => Task.FromResult(SureToDelete);
+            protected override Task<bool> AreYouSureAsync() => Task.FromResult(SureToDelete);
         }
 
         public EditableItemViewModelTests()
@@ -177,21 +177,26 @@ namespace Generic.ViewModels.Tests.ViewModels
         [Fact]
         public void DeleteCommand_CallOnDeleteAsyncNotSure()
         {
-            var viewModel = new TestEditableItemViewModel(_itemsService);
-            viewModel.SureToDelete = false;
+            var viewModel = new TestEditableItemViewModel(_itemsService)
+            {
+                SureToDelete = false
+            };
             viewModel.BeginEdit();
             viewModel.DeleteCommand.Execute();
             Assert.False(viewModel.IsDeleted);
         }
 
         [Fact]
-        public void DeleteCommand_CallOnDeleteAsyncSure()
+        public void DeleteCommand_CallOnDeleteAsyncSure_IsReadModeAfterDelete()
         {
-            var viewModel = new TestEditableItemViewModel(_itemsService);
-            viewModel.SureToDelete = true;
+            var viewModel = new TestEditableItemViewModel(_itemsService)
+            {
+                SureToDelete = true
+            };
             viewModel.BeginEdit();
             viewModel.DeleteCommand.Execute();
             Assert.True(viewModel.IsDeleted);
+            Assert.True(viewModel.IsReadMode);
         }
     }
 }

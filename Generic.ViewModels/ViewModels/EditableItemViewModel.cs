@@ -38,11 +38,11 @@ namespace GenericViewModels.ViewModels
         public DelegateCommand DeleteCommand { get; }
 
         protected abstract Task OnDeleteAsync();
-        protected virtual Task<bool> AreYouSure() => Task.FromResult(false);
+        protected virtual Task<bool> AreYouSureAsync() => Task.FromResult(false);
         private async void OnDelete()
         {
             if (IsReadMode) return;
-            if (!await AreYouSure()) return;
+            if (!await AreYouSureAsync()) return;
 
             using (StartInProgress())
             {
