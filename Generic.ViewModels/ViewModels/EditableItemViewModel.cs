@@ -90,10 +90,10 @@ namespace GenericViewModels.ViewModels
 
         #region Overrides Needed By Derived Class
         /// <summary>
-        /// I
+        /// override for an implementation to save the EditItem
         /// </summary>
-        /// <returns></returns>
-        protected abstract Task OnSaveAsync();
+        /// <returns>a task</returns>
+        protected abstract Task OnSaveCoreAsync();
         protected virtual Task OnEndEditAsync() => Task.CompletedTask;
         protected async void OnAdd() => await OnAddCoreAsync();
 
@@ -103,6 +103,11 @@ namespace GenericViewModels.ViewModels
 
         #region IEditableObject
 
+        /// <summary>
+        /// preparations for edit mode
+        /// sets IsEditMode
+        /// creates a copy of the item and sets the EditItem property
+        /// </summary>
         public virtual void BeginEdit()
         {
             IsEditMode = true;
@@ -113,6 +118,11 @@ namespace GenericViewModels.ViewModels
             }
         }
 
+        /// <summary>
+        /// set back to read mode
+        /// intializes the EditItem property to return the Item property
+        /// refreshes the item list
+        /// </summary>
         public async virtual void CancelEdit()
         {
             IsEditMode = false;
@@ -121,11 +131,17 @@ namespace GenericViewModels.ViewModels
             await OnEndEditAsync();
         }
 
+        /// <summary>
+        /// setup progress information
+        /// invoke OnSaveCoreAsync 
+        /// resets EditItem
+        /// invokes RefreshAsync of the IItemsService, and sets the Item from the selected item
+        /// </summary>
         public async virtual void EndEdit()
         {
             using (StartInProgress())
             {
-                await OnSaveAsync();
+                await OnSaveCoreAsync();
                 EditItem = default(TItem);
                 IsEditMode = false;
                 await _itemsService.RefreshAsync();

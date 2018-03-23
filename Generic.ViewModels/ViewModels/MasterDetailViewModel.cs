@@ -61,6 +61,10 @@ namespace GenericViewModels.ViewModels
             }
         }
 
+        /// <summary>
+        /// preparations for progress information,
+        /// invokes OnRefreshCoreAsync and sets the SelectedItem property
+        /// </summary>
         public async void OnRefresh()
         {
             using (StartInProgress())
@@ -70,11 +74,19 @@ namespace GenericViewModels.ViewModels
             }
         }
 
+        /// <summary>
+        /// invokes RefreshAsync of the IItemsService service
+        /// </summary>
+        /// <returns>a task</returns>
         protected virtual async Task OnRefreshCoreAsync() =>
             await _itemsService.RefreshAsync();
 
         protected async void OnAdd() => await OnAddCoreAsync();
 
+        /// <summary>
+        /// override it to create an implementation to add a new item
+        /// </summary>
+        /// <returns>a task</returns>
         protected virtual Task OnAddCoreAsync() => Task.CompletedTask;
     }
 }
