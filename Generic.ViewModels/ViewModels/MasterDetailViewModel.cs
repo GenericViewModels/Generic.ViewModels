@@ -9,7 +9,7 @@ namespace GenericViewModels.ViewModels
 {
     public abstract class MasterDetailViewModel<TItemViewModel, TItem> : ViewModelBase
         where TItemViewModel : IItemViewModel<TItem>
-        where TItem: class
+        where TItem : class
     {
         private readonly IItemsService<TItem> _itemsService;
 
@@ -54,9 +54,9 @@ namespace GenericViewModels.ViewModels
             get => ToViewModel(_itemsService.SelectedItem);
             set
             {
-                if (!EqualityComparer<TItem>.Default.Equals(SelectedItem, value?.Item)) 
+                if (value != null && !EqualityComparer<TItem>.Default.Equals(SelectedItem, value.Item))
                 {
-                    SelectedItem = value?.Item;
+                    SelectedItem = value.Item;
                 }
             }
         }
@@ -70,7 +70,7 @@ namespace GenericViewModels.ViewModels
             }
         }
 
-        protected async Task OnRefreshAsync() => 
+        protected async Task OnRefreshAsync() =>
             await _itemsService.RefreshAsync();
 
         public abstract void OnAdd();
