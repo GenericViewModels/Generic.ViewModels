@@ -65,14 +65,16 @@ namespace GenericViewModels.ViewModels
         {
             using (StartInProgress())
             {
-                await OnRefreshAsync();
+                await OnRefreshCoreAsync();
                 SelectedItem = _itemsService.Items.FirstOrDefault();
             }
         }
 
-        protected async Task OnRefreshAsync() =>
+        protected virtual async Task OnRefreshCoreAsync() =>
             await _itemsService.RefreshAsync();
 
-        public abstract void OnAdd();
+        protected async void OnAdd() => await OnAddCoreAsync();
+
+        protected virtual Task OnAddCoreAsync() => Task.CompletedTask;
     }
 }

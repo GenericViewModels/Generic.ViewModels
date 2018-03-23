@@ -37,7 +37,7 @@ namespace GenericViewModels.ViewModels
         public DelegateCommand SaveCommand { get; }
         public DelegateCommand DeleteCommand { get; }
 
-        protected abstract Task OnDeleteAsync();
+        protected abstract Task OnDeleteCoreAsync();
         protected virtual Task<bool> AreYouSureAsync() => Task.FromResult(false);
         private async void OnDelete()
         {
@@ -45,7 +45,7 @@ namespace GenericViewModels.ViewModels
 
             using (StartInProgress())
             {
-                await OnDeleteAsync();
+                await OnDeleteCoreAsync();
                 await _itemsService.RefreshAsync();
                 Item = _itemsService.SelectedItem;
                 await OnEndEditAsync();
@@ -95,7 +95,9 @@ namespace GenericViewModels.ViewModels
         /// <returns></returns>
         protected abstract Task OnSaveAsync();
         protected virtual Task OnEndEditAsync() => Task.CompletedTask;
-        protected abstract void OnAdd();
+        protected async void OnAdd() => await OnAddCoreAsync();
+
+        protected virtual Task OnAddCoreAsync() => Task.CompletedTask;
 
         #endregion
 

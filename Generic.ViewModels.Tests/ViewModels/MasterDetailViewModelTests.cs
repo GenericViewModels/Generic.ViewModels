@@ -43,7 +43,7 @@ namespace Generic.ViewModels.Tests.ViewModels
             {
             }
 
-            public override void OnAdd() => throw new NotImplementedException();
+            protected override Task OnAddCoreAsync() => Task.CompletedTask;
             protected override AnItemViewModel ToViewModel(AnItem item) => new AnItemViewModel() { Item = item };
         }
 

@@ -22,7 +22,7 @@ namespace Generic.ViewModels.Tests.ViewModels
             }
 
             protected override AnItem CreateCopy(AnItem item) => new AnItem() { Text = item?.Text ?? "empty" };
-            protected override void OnAdd() => throw new NotImplementedException();
+            protected override Task OnAddCoreAsync() => Task.CompletedTask;
             protected override Task OnSaveAsync()
             {
                 Item.Text = EditItem.Text;
@@ -30,7 +30,7 @@ namespace Generic.ViewModels.Tests.ViewModels
             }
 
             public bool IsDeleted { get; private set; } = false;
-            protected override Task OnDeleteAsync()
+            protected override Task OnDeleteCoreAsync()
             {
                 IsDeleted = true;
                 return Task.CompletedTask;
