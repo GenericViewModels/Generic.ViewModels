@@ -23,7 +23,7 @@ namespace Generic.ViewModels.Tests.ViewModels
 
             protected override AnItem CreateCopy(AnItem item) => new AnItem() { Text = item?.Text ?? "empty" };
             protected override Task OnAddCoreAsync() => Task.CompletedTask;
-            protected override Task OnSaveAsync()
+            protected override Task OnSaveCoreAsync()
             {
                 Item.Text = EditItem.Text;
                 return Task.CompletedTask;

@@ -117,7 +117,7 @@ namespace Generic.ViewModels.Tests.ViewModels
         public void OnRefresh_SetSelectedItem()
         {
             var viewModel = new TestMasterDetailViewModel(_itemsService);
-            viewModel.OnRefresh();
+            viewModel.RefreshCommand.Execute();
 
             Assert.Equal(_item1, viewModel.SelectedItem);
         }

@@ -19,7 +19,7 @@ namespace GenericViewModels.ViewModels
 
             _itemsService.Items.CollectionChanged += (sender, e) =>
             {
-                base.RaisePropertyChanged(nameof(ItemsViewModels));
+                RaisePropertyChanged(nameof(ItemsViewModels));
             };
 
             RefreshCommand = new DelegateCommand(OnRefresh);
@@ -65,7 +65,7 @@ namespace GenericViewModels.ViewModels
         /// preparations for progress information,
         /// invokes OnRefreshCoreAsync and sets the SelectedItem property
         /// </summary>
-        public async void OnRefresh()
+        protected async void OnRefresh()
         {
             using (StartInProgress())
             {
