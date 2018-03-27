@@ -121,5 +121,14 @@ namespace Generic.ViewModels.Tests.ViewModels
 
             Assert.Equal(_item1, viewModel.SelectedItem);
         }
+
+        [Fact]
+        public async Task InitAsync_CallRefresh()
+        {
+            var viewModel = new TestMasterDetailViewModel(_itemsService);
+            await viewModel.InitAsync();
+
+            Assert.Equal(_item1, viewModel.SelectedItem);
+        }
     }
 }

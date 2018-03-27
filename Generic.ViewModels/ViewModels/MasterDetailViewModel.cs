@@ -26,6 +26,8 @@ namespace GenericViewModels.ViewModels
             AddCommand = new DelegateCommand(OnAdd);
         }
 
+        public override Task InitAsync() => RefreshAsync();
+  
         public DelegateCommand RefreshCommand { get; }
         public DelegateCommand AddCommand { get; }
 
@@ -64,8 +66,14 @@ namespace GenericViewModels.ViewModels
         /// <summary>
         /// preparations for progress information,
         /// invokes OnRefreshCoreAsync and sets the SelectedItem property
+        /// Invoked by the RefreshCommand
         /// </summary>
         protected async void OnRefresh()
+        {
+            await RefreshAsync();
+        }
+
+        private async Task RefreshAsync()
         {
             using (StartInProgress())
             {
@@ -75,7 +83,7 @@ namespace GenericViewModels.ViewModels
         }
 
         /// <summary>
-        /// invokes RefreshAsync of the IItemsService service
+        /// Invokes RefreshAsync of the IItemsService service
         /// </summary>
         /// <returns>a task</returns>
         protected virtual async Task OnRefreshCoreAsync() =>
