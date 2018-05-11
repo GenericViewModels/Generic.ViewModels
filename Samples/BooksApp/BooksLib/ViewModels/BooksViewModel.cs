@@ -4,6 +4,7 @@ using BooksLib.Services;
 using GenericViewModels.Services;
 using GenericViewModels.ViewModels;
 using System;
+using System.Threading.Tasks;
 
 namespace BooksLib.ViewModels
 {
@@ -34,11 +35,12 @@ namespace BooksLib.ViewModels
 
         public bool UseNavigation { get; set; }
 
-        public override void OnAdd()
+        protected override Task OnAddCoreAsync()
         {
             var newBook = new Book();
             Items.Add(newBook);
             SelectedItem = newBook;
+            return base.OnRefreshCoreAsync();
         }
 
         protected override BookItemViewModel ToViewModel(Book item) => new BookItemViewModel(item, _booksService);

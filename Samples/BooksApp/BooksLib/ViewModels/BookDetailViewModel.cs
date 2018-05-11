@@ -31,7 +31,7 @@ namespace BooksLib.ViewModels
 
         public bool UseNavigation { get; set; }
 
-        public override Book CreateCopy(Book item) =>
+        protected override Book CreateCopy(Book item) =>
             new Book
             {
                 BookId = item?.BookId ?? -1,
@@ -39,12 +39,7 @@ namespace BooksLib.ViewModels
                 Publisher = item?.Publisher ?? "enter a publisher"
             };
 
-        protected override void OnAdd()
-        {
-
-        }
-
-        public async override Task OnSaveAsync()
+        protected async override Task OnSaveCoreAsync()
         {
             try
             {
@@ -52,17 +47,19 @@ namespace BooksLib.ViewModels
             }
             catch (Exception ex)
             {
-                _logger.LogError("error {0} in {1}", ex.Message, nameof(OnSaveAsync));
+                _logger.LogError("error {0} in {1}", ex.Message, nameof(OnSaveCoreAsync));
                 await _messageService.ShowMessageAsync("Error saving the data");
             }
         }
 
-        public async override Task OnEndEditAsync()
+        protected async override Task OnEndEditAsync()
         {
             if (UseNavigation)
             {
                 await _navigationService.GoBackAsync();
             }
         }
+
+        protected override Task OnDeleteCoreAsync() => throw new NotImplementedException();
     }
 }
