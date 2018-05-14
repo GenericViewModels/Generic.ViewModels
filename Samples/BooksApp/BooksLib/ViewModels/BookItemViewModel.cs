@@ -2,6 +2,7 @@
 using GenericViewModels.Services;
 using GenericViewModels.ViewModels;
 using Prism.Commands;
+using System;
 
 namespace BooksLib.ViewModels
 {
@@ -13,7 +14,8 @@ namespace BooksLib.ViewModels
         public BookItemViewModel(Book book, IItemsService<Book> booksService)
             : base(book)
         {
-            _booksService = booksService;
+            _booksService = booksService ?? throw new ArgumentNullException(nameof(booksService));
+
             DeleteBookCommand = new DelegateCommand(OnDeleteBook);
         }
 

@@ -11,7 +11,7 @@ namespace BooksApp.Views
         public BooksPage()
         {
             InitializeComponent();
-            ViewModel.UseNavigation = false;
+            // ViewModel.UseNavigation = false;
             BookDetailUC.ViewModel = (Application.Current as App).AppServices.GetService<BookDetailViewModel>();
 
             SystemNavigationManager.GetForCurrentView().AppViewBackButtonVisibility = AppViewBackButtonVisibility.Collapsed;

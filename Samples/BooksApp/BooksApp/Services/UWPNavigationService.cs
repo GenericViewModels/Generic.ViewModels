@@ -39,6 +39,8 @@ namespace BooksApp.Services
 
         public bool CanGoBack => Frame?.CanGoBack ?? false;
 
+        public bool UseNavigation { get; set; }
+
         public Task NavigateToAsync(string pageName)
         {
             _currentPage = pageName;

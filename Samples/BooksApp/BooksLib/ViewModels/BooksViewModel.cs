@@ -21,19 +21,17 @@ namespace BooksLib.ViewModels
 
             EventAggregator<NavigationInfoEvent>.Instance.Event += (sender, e) =>
             {
-                UseNavigation = e.UseNavigation;
+                _navigationService.UseNavigation = e.UseNavigation;
             };
 
             PropertyChanged += async (sender, e) =>
             {
-                if (UseNavigation && e.PropertyName == nameof(SelectedItem) && _navigationService.CurrentPage == PageNames.BooksPage)
+                if (_navigationService.UseNavigation && e.PropertyName == nameof(SelectedItem) && _navigationService.CurrentPage == PageNames.BooksPage)
                 {
                     await _navigationService.NavigateToAsync(PageNames.BookDetailPage);
                 }
             };
         }
-
-        public bool UseNavigation { get; set; }
 
         protected override Task OnAddCoreAsync()
         {

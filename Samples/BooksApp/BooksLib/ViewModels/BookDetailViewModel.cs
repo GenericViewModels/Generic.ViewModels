@@ -18,10 +18,10 @@ namespace BooksLib.ViewModels
         public BookDetailViewModel(IItemsService<Book> itemsService, INavigationService navigationService, IMessageService messageService, ILogger<BookDetailViewModel> logger)
             : base(itemsService)
         {
-            _itemsService = itemsService;
-            _navigationService = navigationService;
-            _messageService = messageService;
-            _logger = logger;
+            _itemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
+            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+            _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             itemsService.SelectedItemChanged += (sender, book) =>
             {
