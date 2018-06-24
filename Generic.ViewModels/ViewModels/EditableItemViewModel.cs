@@ -10,11 +10,14 @@ namespace GenericViewModels.ViewModels
         where TItem : class
     {
         private readonly IItemsService<TItem> _itemsService;
+        private readonly ISelectedItemService<TItem> _selectedItemService;
 
-        public EditableItemViewModel(IItemsService<TItem> itemsService)
+        public EditableItemViewModel(IItemsService<TItem> itemsService, ISelectedItemService<TItem> selectedItemService)
         {
             _itemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
-            Item = _itemsService.SelectedItem;
+            _selectedItemService = selectedItemService ?? throw new ArgumentNullException(nameof(selectedItemService));
+
+            Item = _selectedItemService.SelectedItem;
 
             PropertyChanged += (sender, e) =>
             {
@@ -47,7 +50,7 @@ namespace GenericViewModels.ViewModels
             {
                 await OnDeleteCoreAsync();
                 await _itemsService.RefreshAsync();
-                Item = _itemsService.SelectedItem;
+                Item = _selectedItemService.SelectedItem;
                 await OnEndEditAsync();
             }
         }
@@ -145,7 +148,7 @@ namespace GenericViewModels.ViewModels
                 EditItem = default(TItem);
                 IsEditMode = false;
                 await _itemsService.RefreshAsync();
-                Item = _itemsService.SelectedItem;
+                Item = _selectedItemService.SelectedItem;
                 await OnEndEditAsync();
             }
         }

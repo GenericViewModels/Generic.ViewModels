@@ -16,8 +16,8 @@ namespace Generic.ViewModels.Tests.ViewModels
         }
         public class TestEditableItemViewModel : EditableItemViewModel<AnItem>
         {
-            public TestEditableItemViewModel(IItemsService<AnItem> itemsService)
-                : base(itemsService)
+            public TestEditableItemViewModel(IItemsService<AnItem> itemsService, ISelectedItemService<AnItem> selecteItemService)
+                : base(itemsService, selecteItemService)
             {
             }
 
@@ -53,19 +53,23 @@ namespace Generic.ViewModels.Tests.ViewModels
                 .Returns(Task.CompletedTask);
             mockingObject.Setup(service => service.Items)
                 .Returns(() => items);
-            mockingObject.Setup(service => service.SelectedItem)
+            var selectedItemMockingObject = new Mock<ISelectedItemService<AnItem>>();
+            selectedItemMockingObject.Setup(service => service.SelectedItem)
                 .Returns(items[1]);
             _itemsService = mockingObject.Object;
+            _selectedItemService = selectedItemMockingObject.Object;
+           
         }
 
         private IItemsService<AnItem> _itemsService;
+        private ISelectedItemService<AnItem> _selectedItemService;
 
 
         [Fact]
         public void IsEditModeRaiseEvents()
         {
             // arrange               
-            var viewModel = new TestEditableItemViewModel(_itemsService);
+            var viewModel = new TestEditableItemViewModel(_itemsService, _selectedItemService);
             bool cancelCommandFired = false;
             bool saveCommandFired = false;
             bool editCommandFired = false;
@@ -92,7 +96,7 @@ namespace Generic.ViewModels.Tests.ViewModels
             bool editItemChangedFired = false;
             bool itemChangedFired = false;
 
-            var viewModel = new TestEditableItemViewModel(_itemsService);
+            var viewModel = new TestEditableItemViewModel(_itemsService, _selectedItemService);
             viewModel.PropertyChanged += (sender, e) =>
             {
                 if (e.PropertyName == "Item") itemChangedFired = true;
@@ -107,7 +111,7 @@ namespace Generic.ViewModels.Tests.ViewModels
         [Fact]
         public void BeginEdit_IsEditMode()
         {
-            var viewModel = new TestEditableItemViewModel(_itemsService);
+            var viewModel = new TestEditableItemViewModel(_itemsService, _selectedItemService);
 
             viewModel.BeginEdit();
 
@@ -117,7 +121,7 @@ namespace Generic.ViewModels.Tests.ViewModels
         [Fact]
         public void BeginEdit_CreateCopy()
         {
-            var viewModel = new TestEditableItemViewModel(_itemsService);
+            var viewModel = new TestEditableItemViewModel(_itemsService, _selectedItemService);
 
             viewModel.BeginEdit();
             viewModel.EditItem.Text = "new text";
@@ -128,7 +132,7 @@ namespace Generic.ViewModels.Tests.ViewModels
         [Fact]
         public void CancelEdit_EditMode()
         {
-            var viewModel = new TestEditableItemViewModel(_itemsService);
+            var viewModel = new TestEditableItemViewModel(_itemsService, _selectedItemService);
             viewModel.BeginEdit();
 
             viewModel.CancelEdit();
@@ -139,7 +143,7 @@ namespace Generic.ViewModels.Tests.ViewModels
         [Fact]
         public void CancelEdit_EditItemReset()
         {
-            var viewModel = new TestEditableItemViewModel(_itemsService);
+            var viewModel = new TestEditableItemViewModel(_itemsService, _selectedItemService);
             viewModel.BeginEdit();
             viewModel.EditItem.Text = "new text";
 
@@ -152,7 +156,7 @@ namespace Generic.ViewModels.Tests.ViewModels
         [Fact]
         public void EndEdit_ItemSaved()
         {
-            var viewModel = new TestEditableItemViewModel(_itemsService);
+            var viewModel = new TestEditableItemViewModel(_itemsService, _selectedItemService);
             viewModel.BeginEdit();
             viewModel.EditItem.Text = "new text";
 
@@ -165,7 +169,7 @@ namespace Generic.ViewModels.Tests.ViewModels
         [Fact]
         public void DeleteCommand_DoNothingOnReadMode()
         {
-            var viewModel = new TestEditableItemViewModel(_itemsService);
+            var viewModel = new TestEditableItemViewModel(_itemsService, _selectedItemService);
             viewModel.DeleteCommand.Execute();
             Assert.False(viewModel.IsDeleted);
         }
@@ -173,7 +177,7 @@ namespace Generic.ViewModels.Tests.ViewModels
         [Fact]
         public void DeleteCommand_CallOnDeleteAsyncNotSure()
         {
-            var viewModel = new TestEditableItemViewModel(_itemsService)
+            var viewModel = new TestEditableItemViewModel(_itemsService, _selectedItemService)
             {
                 SureToDelete = false
             };
@@ -184,7 +188,7 @@ namespace Generic.ViewModels.Tests.ViewModels
         [Fact]
         public void DeleteCommand_CallOnDeleteAsyncSure_IsReadModeAfterDelete()
         {
-            var viewModel = new TestEditableItemViewModel(_itemsService)
+            var viewModel = new TestEditableItemViewModel(_itemsService, _selectedItemService)
             {
                 SureToDelete = true
             };

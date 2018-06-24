@@ -1,5 +1,6 @@
 ﻿using GenericViewModels.Services;
 using Prism.Commands;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -12,10 +13,12 @@ namespace GenericViewModels.ViewModels
         where TItem : class
     {
         private readonly IItemsService<TItem> _itemsService;
+        private readonly ISelectedItemService<TItem> _selectedItemService;
 
-        public MasterDetailViewModel(IItemsService<TItem> itemsService)
+        public MasterDetailViewModel(IItemsService<TItem> itemsService, ISelectedItemService<TItem> selectedItemService)
         {
-            _itemsService = itemsService;
+            _itemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
+            _selectedItemService = selectedItemService ?? throw new ArgumentNullException(nameof(selectedItemService));
 
             _itemsService.Items.CollectionChanged += (sender, e) =>
             {
@@ -39,12 +42,12 @@ namespace GenericViewModels.ViewModels
 
         public virtual TItem SelectedItem
         {
-            get => _itemsService.SelectedItem;
+            get => _selectedItemService.SelectedItem;
             set
             {
-                if (!EqualityComparer<TItem>.Default.Equals(_itemsService.SelectedItem, value))
+                if (!EqualityComparer<TItem>.Default.Equals(_selectedItemService.SelectedItem, value))
                 {
-                    _itemsService.SelectedItem = value;
+                    _selectedItemService.SelectedItem = value;
                     RaisePropertyChanged();
                     RaisePropertyChanged(nameof(SelectedItemViewModel));
                 }
@@ -53,7 +56,7 @@ namespace GenericViewModels.ViewModels
 
         public virtual TItemViewModel SelectedItemViewModel
         {
-            get => ToViewModel(_itemsService.SelectedItem);
+            get => ToViewModel(_selectedItemService.SelectedItem);
             set
             {
                 if (value != null && !EqualityComparer<TItem>.Default.Equals(SelectedItem, value.Item))
