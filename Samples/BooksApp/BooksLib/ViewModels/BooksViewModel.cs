@@ -13,8 +13,8 @@ namespace BooksLib.ViewModels
         private readonly IItemsService<Book> _booksService;
         private readonly INavigationService _navigationService;
 
-        public BooksViewModel(IItemsService<Book> booksService, INavigationService navigationService)
-            : base(booksService)
+        public BooksViewModel(IItemsService<Book> booksService, ISelectedItemService<Book> selectedBookService, INavigationService navigationService)
+            : base(booksService, selectedBookService)
         {
             _booksService = booksService ?? throw new ArgumentNullException(nameof(booksService));
             _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
