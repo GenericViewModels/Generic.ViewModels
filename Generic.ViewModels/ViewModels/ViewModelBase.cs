@@ -12,7 +12,7 @@ namespace GenericViewModels.ViewModels
     {
         /// <summary>
         /// Override for special initialization.
-        /// Does nothing with ViewModelBase
+        /// Empty implementation with ViewModelBase
         /// </summary>
         /// <returns>a task</returns>
         public virtual Task InitAsync() => Task.CompletedTask;
