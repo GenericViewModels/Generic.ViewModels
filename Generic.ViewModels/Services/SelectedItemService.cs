@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace GenericViewModels.Services
 {
@@ -10,8 +11,11 @@ namespace GenericViewModels.Services
             get => _selectedItem;
             set
             {
-                _selectedItem = value;
-                SelectedItemChanged?.Invoke(this, _selectedItem);
+                if (!EqualityComparer<T>.Default.Equals(_selectedItem, value))
+                {
+                    _selectedItem = value;
+                    SelectedItemChanged?.Invoke(this, _selectedItem);
+                }
             }
         }
 
