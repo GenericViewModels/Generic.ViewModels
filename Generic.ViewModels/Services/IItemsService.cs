@@ -13,7 +13,5 @@ namespace GenericViewModels.Services
         Task DeleteAsync(T item);
 
         ObservableCollection<T> Items { get; }
-
-
     }
 }
