@@ -1,4 +1,5 @@
 ﻿using GenericViewModels.Core;
+using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
@@ -7,6 +8,12 @@ namespace GenericViewModels.Services
     public abstract class ItemsService<T> : IItemsService<T>
     {
         protected AsyncEventSlim _initialized = new AsyncEventSlim();
+        private readonly ISharedItemsService<T> _sharedItemsService;
+
+        public ItemsService(ISharedItemsService<T> sharedItemsService)
+        {
+            _sharedItemsService = sharedItemsService ?? throw new ArgumentNullException(nameof(sharedItemsService));
+        }
 
         /// <summary>
         /// Call this method from the constructor of the base class if an asynchronous intialization is needed.
@@ -31,8 +38,7 @@ namespace GenericViewModels.Services
         /// <returns>A <see cref="Task" that is completed when the event is signalled/></returns>
         protected virtual Task InitCoreAsync() => Task.CompletedTask;
 
-        private readonly ObservableCollection<T> _items = new ObservableCollection<T>();
-        public virtual ObservableCollection<T> Items => _items;
+        public virtual ObservableCollection<T> Items => _sharedItemsService.Items;
 
         public virtual Task<T> AddOrUpdateAsync(T item) => Task.FromResult<T>(default);
         public virtual Task DeleteAsync(T item) => Task.FromResult<T>(default);

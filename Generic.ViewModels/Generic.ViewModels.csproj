@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -12,6 +12,7 @@
     <PackageProjectUrl>https://github.com/CNinnovation/Generic.ViewModels</PackageProjectUrl>
     <RepositoryUrl>https://github.com/CNinnovation/Generic.ViewModels</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
