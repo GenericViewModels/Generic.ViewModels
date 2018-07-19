@@ -29,11 +29,7 @@ namespace GenericViewModels.ViewModels
             AddCommand = new DelegateCommand(OnAdd);
         }
 
-        /// <summary>
-        /// Invokes RefreshAsync
-        /// </summary>
-        /// <returns>a task</returns>
-        public override Task InitAsync() => RefreshAsync();
+        protected override Task InitCoreAsync() => RefreshAsync();
   
         public DelegateCommand RefreshCommand { get; }
         public DelegateCommand AddCommand { get; }

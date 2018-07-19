@@ -1,4 +1,5 @@
-﻿using Prism.Mvvm;
+﻿using GenericViewModels.Core;
+using Prism.Mvvm;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,12 +11,18 @@ namespace GenericViewModels.ViewModels
     /// </summary>
     public abstract class ViewModelBase : BindableBase
     {
-        /// <summary>
-        /// Override for special initialization.
-        /// Empty implementation with ViewModelBase
-        /// </summary>
-        /// <returns>a task</returns>
-        public virtual Task InitAsync() => Task.CompletedTask;
+        protected AsyncEventSlim _initialized = new AsyncEventSlim();
+
+        protected virtual Task InitCoreAsync() => Task.CompletedTask;
+
+        public async Task InitAsync()
+        {
+            using (StartInProgress())
+            {
+                await InitCoreAsync();
+                _initialized.Signal();
+            }
+        }
 
         #region Progress Information
         private class StateSetter : IDisposable
