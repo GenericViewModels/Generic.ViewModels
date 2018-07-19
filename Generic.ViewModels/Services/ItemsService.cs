@@ -27,7 +27,8 @@ namespace GenericViewModels.Services
 
         protected Task InitAsyncCore() => Task.CompletedTask;
 
-        public abstract ObservableCollection<T> Items { get; }
+        private readonly ObservableCollection<T> _items = new ObservableCollection<T>();
+        public virtual ObservableCollection<T> Items => _items;
 
         public abstract Task<T> AddOrUpdateAsync(T item);
         public abstract Task DeleteAsync(T item);

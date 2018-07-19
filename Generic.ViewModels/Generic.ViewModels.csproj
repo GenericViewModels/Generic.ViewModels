@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>GenericViewModels</RootNamespace>
-    <Version>0.1.34-alpha</Version>
+    <Version>0.1.35-alpha</Version>
     <Authors>Christian Nagel</Authors>
     <Company>CN innovation</Company>
     <Description>Generic view-model types and core MVVM classes</Description>
