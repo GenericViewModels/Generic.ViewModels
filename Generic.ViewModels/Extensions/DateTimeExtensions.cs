@@ -6,6 +6,11 @@ namespace GenericViewModels.Extensions
 {
     public static class DateTimeExtensions
     {
+        /// <summary>
+        /// returns the monday of the next week of the supplied date
+        /// </summary>
+        /// <param name="date">A date <see cref="DateTime"/></param>
+        /// <returns>the monday of the next week of the supplied date</returns>
         public static DateTime GetNextMonday(this DateTime date)
         {
             int addDays = 8 - (int)date.DayOfWeek;
@@ -13,6 +18,11 @@ namespace GenericViewModels.Extensions
             return date.AddDays(addDays);
         }
 
+        /// <summary>
+        /// returns the monday of the current week of the supplied date
+        /// </summary>
+        /// <param name="date">A date <see cref="DateTime"/></param>
+        /// <returns>the monday of the current week of the supplied date</returns>
         public static DateTime GetMonday(this DateTime date)
         {
             int number = (int)date.DayOfWeek;
