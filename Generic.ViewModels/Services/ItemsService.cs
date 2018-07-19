@@ -6,32 +6,36 @@ namespace GenericViewModels.Services
 {
     public abstract class ItemsService<T> : IItemsService<T>
     {
-        private AsyncEventSlim _initalized = new AsyncEventSlim();
+        protected AsyncEventSlim _initialized = new AsyncEventSlim();
 
-        public ItemsService()
-        {
-            Task t = InitAsync();
-        }
-
-        private async Task InitAsync()
+        /// <summary>
+        /// Call this method from the constructor of the base class if an asynchronous intialization is needed.
+        /// Invokes the overrideable method InitCoreAsync, and signals completion with the _initialized event
+        /// </summary>
+        /// <returns>A <see cref="Task" that is completed when the event is signalled/></returns>
+        protected async Task InitAsync()
         {
             try
             {
-                await InitAsyncCore();
+                await InitCoreAsync();
             }
             finally
             {
-                _initalized.Signal();
+                _initialized.Signal();
             }
         }
 
-        protected virtual Task InitAsyncCore() => Task.CompletedTask;
+        /// <summary>
+        /// Override this method in case of async completion is needed
+        /// </summary>
+        /// <returns>A <see cref="Task" that is completed when the event is signalled/></returns>
+        protected virtual Task InitCoreAsync() => Task.CompletedTask;
 
         private readonly ObservableCollection<T> _items = new ObservableCollection<T>();
         public virtual ObservableCollection<T> Items => _items;
 
-        public abstract Task<T> AddOrUpdateAsync(T item);
-        public abstract Task DeleteAsync(T item);
-        public abstract Task RefreshAsync();
+        public virtual Task<T> AddOrUpdateAsync(T item) => Task.FromResult<T>(default);
+        public virtual Task DeleteAsync(T item) => Task.FromResult<T>(default);
+        public virtual Task RefreshAsync() => Task.FromResult<T>(default);
     }
 }
