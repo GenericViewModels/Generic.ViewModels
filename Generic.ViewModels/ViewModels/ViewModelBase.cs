@@ -1,4 +1,4 @@
-﻿using GenericViewModels.Core;
+using GenericViewModels.Core;
 using Prism.Mvvm;
 using System;
 using System.Threading;
@@ -11,8 +11,13 @@ namespace GenericViewModels.ViewModels
     /// </summary>
     public abstract class ViewModelBase : BindableBase
     {
-        protected AsyncEventSlim _initialized = new AsyncEventSlim();
+        protected readonly AsyncEventSlim _initialized = new AsyncEventSlim();
 
+        /// <summary>
+        /// Override for special initialization.
+        /// Empty implementation with ViewModelBase
+        /// </summary>
+        /// <returns>a <see cref="Task"/></returns>
         protected virtual Task InitCoreAsync() => Task.CompletedTask;
 
         public async Task InitAsync()
