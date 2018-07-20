@@ -113,6 +113,7 @@ namespace BooksApp
             var services = new ServiceCollection();
             services.AddSingleton<IBooksRepository, BooksSampleRepository>();
             services.AddSingleton<IItemsService<Book>, BooksService>();
+            services.AddSingleton<ISelectedItemService<Book>, SelectedItemService<Book>>();
             services.AddTransient<BooksViewModel>();
             services.AddTransient<BookDetailViewModel>();
             services.AddTransient<MainPageViewModel>();

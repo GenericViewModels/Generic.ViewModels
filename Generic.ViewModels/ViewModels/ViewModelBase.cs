@@ -1,6 +1,8 @@
-﻿using Prism.Mvvm;
+﻿using GenericViewModels.Core;
+using Prism.Mvvm;
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace GenericViewModels.ViewModels
 {
@@ -9,6 +11,20 @@ namespace GenericViewModels.ViewModels
     /// </summary>
     public abstract class ViewModelBase : BindableBase
     {
+        protected AsyncEventSlim _initialized = new AsyncEventSlim();
+
+        protected virtual Task InitCoreAsync() => Task.CompletedTask;
+
+        public async Task InitAsync()
+        {
+            using (StartInProgress())
+            {
+                await InitCoreAsync();
+                _initialized.Signal();
+            }
+        }
+
+        #region Progress Information
         private class StateSetter : IDisposable
         {
             private Action _end;
@@ -39,7 +55,9 @@ namespace GenericViewModels.ViewModels
             new StateSetter(() => SetInProgress(), () => SetInProgress(false));
 
         public bool InProgress => _inProgressCounter != 0;
+        #endregion
 
+        #region Error Information
         private bool _hasError;
         public bool HasError
         {
@@ -53,5 +71,6 @@ namespace GenericViewModels.ViewModels
             get => _errorMessage;
             set => SetProperty(ref _errorMessage, value);
         }
+        #endregion
     }
 }

@@ -1,9 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>GenericViewModels</RootNamespace>
-    <Version>0.1.11-alpha</Version>
+    <Version>0.1.43-alpha</Version>
     <Authors>Christian Nagel</Authors>
     <Company>CN innovation</Company>
     <Description>Generic view-model types and core MVVM classes</Description>
@@ -12,11 +12,12 @@
     <PackageProjectUrl>https://github.com/CNinnovation/Generic.ViewModels</PackageProjectUrl>
     <RepositoryUrl>https://github.com/CNinnovation/Generic.ViewModels</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Moq" Version="4.8.2" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="Prism.Core" Version="7.0.0.396" />
   </ItemGroup>
 

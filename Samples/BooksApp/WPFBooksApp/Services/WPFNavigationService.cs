@@ -10,6 +10,8 @@ namespace WPFBooksApp.Services
 
         public string CurrentPage => throw new NotImplementedException();
 
+        public bool UseNavigation { get; set; } = false;
+
         public Task GoBackAsync() => throw new NotImplementedException();
         public Task NavigateToAsync(string page) => throw new NotImplementedException();
     }

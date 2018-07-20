@@ -1,15 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace GenericViewModels.Extensions
 {
-    public static class DateTimeOffsetExtensions
+    public static class DateTimeExtensions
     {
         /// <summary>
         /// returns the monday of the next week of the supplied date
         /// </summary>
-        /// <param name="date">A date <see cref="DateTimeOffset"/></param>
+        /// <param name="date">A date <see cref="DateTime"/></param>
         /// <returns>the monday of the next week of the supplied date</returns>
-        public static DateTimeOffset GetNextMonday(this DateTimeOffset date)
+        public static DateTime GetNextMonday(this DateTime date)
         {
             int addDays = 8 - (int)date.DayOfWeek;
             if (addDays > 7) addDays -= 7;
@@ -19,9 +21,9 @@ namespace GenericViewModels.Extensions
         /// <summary>
         /// returns the monday of the current week of the supplied date
         /// </summary>
-        /// <param name="date">A date <see cref="DateTimeOffset"/></param>
+        /// <param name="date">A date <see cref="DateTime"/></param>
         /// <returns>the monday of the current week of the supplied date</returns>
-        public static DateTimeOffset GetMonday(this DateTimeOffset date)
+        public static DateTime GetMonday(this DateTime date)
         {
             int number = (int)date.DayOfWeek;
             if (number == 0) return date.AddDays(1);

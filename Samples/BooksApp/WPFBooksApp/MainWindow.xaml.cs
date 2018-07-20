@@ -25,7 +25,6 @@ namespace WPFBooksApp
         public MainWindow()
         {
             InitializeComponent();
-            ViewModel.UseNavigation = false;
             BookDetailUC.ViewModel = (Application.Current as App).AppServices.GetService<BookDetailViewModel>();
             DataContext = this;
         }

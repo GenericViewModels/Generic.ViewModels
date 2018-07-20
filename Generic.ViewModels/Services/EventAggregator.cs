@@ -2,6 +2,7 @@
 
 namespace GenericViewModels.Services
 {
+    [Obsolete("Use Prism instead")]
     public class EventAggregator<TEvent>
         where TEvent : EventArgs
     {

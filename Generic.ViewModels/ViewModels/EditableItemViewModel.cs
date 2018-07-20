@@ -10,11 +10,14 @@ namespace GenericViewModels.ViewModels
         where TItem : class
     {
         private readonly IItemsService<TItem> _itemsService;
+        private readonly ISelectedItemService<TItem> _selectedItemService;
 
-        public EditableItemViewModel(IItemsService<TItem> itemsService)
+        public EditableItemViewModel(IItemsService<TItem> itemsService, ISelectedItemService<TItem> selectedItemService)
         {
             _itemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
-            Item = _itemsService.SelectedItem;
+            _selectedItemService = selectedItemService ?? throw new ArgumentNullException(nameof(selectedItemService));
+
+            Item = _selectedItemService.SelectedItem;
 
             PropertyChanged += (sender, e) =>
             {
@@ -28,12 +31,33 @@ namespace GenericViewModels.ViewModels
             CancelCommand = new DelegateCommand(CancelEdit, () => IsEditMode);
             SaveCommand = new DelegateCommand(EndEdit, () => IsEditMode);
             AddCommand = new DelegateCommand(OnAdd, () => IsReadMode);
+            DeleteCommand = new DelegateCommand(OnDelete);
         }
 
         public DelegateCommand AddCommand { get; }
         public DelegateCommand EditCommand { get; }
         public DelegateCommand CancelCommand { get; }
         public DelegateCommand SaveCommand { get; }
+        public DelegateCommand DeleteCommand { get; }
+
+        protected abstract Task OnDeleteCoreAsync();
+        /// <summary>
+        /// Overriding this method is required to start the OnDelete method
+        /// </summary>
+        /// <returns>A <see cref="Task"/></returns>
+        protected virtual Task<bool> AreYouSureAsync() => Task.FromResult(false);
+        private async void OnDelete()
+        {
+            if (!await AreYouSureAsync()) return;
+
+            using (StartInProgress())
+            {
+                await OnDeleteCoreAsync();
+                await _itemsService.RefreshAsync();
+                Item = _selectedItemService.SelectedItem;
+                await OnEndEditAsync();
+            }
+        }
 
         #region Edit / Read Mode
         private bool _isEditMode;
@@ -41,7 +65,7 @@ namespace GenericViewModels.ViewModels
         public bool IsEditMode
         {
             get => _isEditMode;
-            set
+            private set
             {
                 if (SetProperty(ref _isEditMode, value))
                 {
@@ -69,21 +93,28 @@ namespace GenericViewModels.ViewModels
 
         #endregion
 
-        public abstract TItem CreateCopy(TItem item);
+        protected abstract TItem CreateCopy(TItem item);
 
         #region Overrides Needed By Derived Class
         /// <summary>
-        /// I
+        /// override for an implementation to save the EditItem
         /// </summary>
-        /// <returns></returns>
-        public abstract Task OnSaveAsync();
-        public virtual Task OnEndEditAsync() => Task.CompletedTask;
-        protected abstract void OnAdd();
+        /// <returns>a task</returns>
+        protected abstract Task OnSaveCoreAsync();
+        protected virtual Task OnEndEditAsync() => Task.CompletedTask;
+        protected async void OnAdd() => await OnAddCoreAsync();
+
+        protected virtual Task OnAddCoreAsync() => Task.CompletedTask;
 
         #endregion
 
         #region IEditableObject
 
+        /// <summary>
+        /// preparations for edit mode
+        /// sets IsEditMode
+        /// creates a copy of the item and sets the EditItem property
+        /// </summary>
         public virtual void BeginEdit()
         {
             IsEditMode = true;
@@ -94,6 +125,11 @@ namespace GenericViewModels.ViewModels
             }
         }
 
+        /// <summary>
+        /// set back to read mode
+        /// intializes the EditItem property to return the Item property
+        /// refreshes the item list
+        /// </summary>
         public async virtual void CancelEdit()
         {
             IsEditMode = false;
@@ -102,15 +138,21 @@ namespace GenericViewModels.ViewModels
             await OnEndEditAsync();
         }
 
+        /// <summary>
+        /// setup progress information
+        /// invoke OnSaveCoreAsync 
+        /// resets EditItem
+        /// invokes RefreshAsync of the IItemsService, and sets the Item from the selected item
+        /// </summary>
         public async virtual void EndEdit()
         {
             using (StartInProgress())
             {
-                await OnSaveAsync();
+                await OnSaveCoreAsync();
                 EditItem = default(TItem);
                 IsEditMode = false;
                 await _itemsService.RefreshAsync();
-                Item = _itemsService.SelectedItem;
+                Item = _selectedItemService.SelectedItem;
                 await OnEndEditAsync();
             }
         }

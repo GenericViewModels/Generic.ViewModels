@@ -13,11 +13,10 @@ namespace BooksApp
     {
         public MainPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
             ViewModel = (Application.Current as App).AppServices.GetService<MainPageViewModel>();
             ViewModel.SetNavigationFrame(ContentFrame);
         }
-
 
         public MainPageViewModel ViewModel { get; }
 
@@ -25,8 +24,5 @@ namespace BooksApp
         {
             EventAggregator<NavigationInfoEvent>.Instance.Publish(this, new NavigationInfoEvent { UseNavigation = e.NewSize.Width < 1024 });
         }
-
-
-
     }
 }
