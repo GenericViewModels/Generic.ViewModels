@@ -1,4 +1,4 @@
-﻿using GenericViewModels.Services;
+using GenericViewModels.Services;
 using Prism.Commands;
 using System;
 using System.Collections.Generic;
@@ -28,11 +28,7 @@ namespace GenericViewModels.ViewModels
             RefreshCommand = new DelegateCommand(OnRefresh);
             AddCommand = new DelegateCommand(OnAdd);
         }
-
-        /// <summary>
-        /// Invokes RefreshAsync
-        /// </summary>
-        /// <returns>a task</returns>
+          
         protected override Task InitCoreAsync() => RefreshAsync();
   
         public DelegateCommand RefreshCommand { get; }

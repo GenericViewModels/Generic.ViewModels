@@ -18,15 +18,11 @@ namespace BooksApp
             ViewModel.SetNavigationFrame(ContentFrame);
         }
 
-
         public MainPageViewModel ViewModel { get; }
 
         private void OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             EventAggregator<NavigationInfoEvent>.Instance.Publish(this, new NavigationInfoEvent { UseNavigation = e.NewSize.Width < 1024 });
         }
-
-
-
     }
 }
