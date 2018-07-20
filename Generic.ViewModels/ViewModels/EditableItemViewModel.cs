@@ -41,6 +41,10 @@ namespace GenericViewModels.ViewModels
         public DelegateCommand DeleteCommand { get; }
 
         protected abstract Task OnDeleteCoreAsync();
+        /// <summary>
+        /// Overriding this method is required to start the OnDelete method
+        /// </summary>
+        /// <returns>A <see cref="Task"/></returns>
         protected virtual Task<bool> AreYouSureAsync() => Task.FromResult(false);
         private async void OnDelete()
         {
