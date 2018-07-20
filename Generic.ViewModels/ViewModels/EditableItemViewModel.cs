@@ -1,5 +1,4 @@
-﻿using GenericViewModels.Extensions;
-using GenericViewModels.Services;
+﻿using GenericViewModels.Services;
 using Prism.Commands;
 using System;
 using System.ComponentModel;
@@ -12,13 +11,11 @@ namespace GenericViewModels.ViewModels
     {
         private readonly IItemsService<TItem> _itemsService;
         private readonly ISelectedItemService<TItem> _selectedItemService;
-        private readonly IActivityService _activityService;
 
-        public EditableItemViewModel(IItemsService<TItem> itemsService, ISelectedItemService<TItem> selectedItemService, IActivityService activityService)
+        public EditableItemViewModel(IItemsService<TItem> itemsService, ISelectedItemService<TItem> selectedItemService)
         {
             _itemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
             _selectedItemService = selectedItemService ?? throw new ArgumentNullException(nameof(selectedItemService));
-            _activityService = activityService ?? throw new ArgumentNullException(nameof(activityService));
 
             Item = _selectedItemService.SelectedItem;
 
@@ -57,11 +54,8 @@ namespace GenericViewModels.ViewModels
         protected abstract Task OnDeleteCoreAsync();
         protected async void OnDelete()
         {
-            _activityService.TrackEvent($"{nameof(DeleteCommand)}");
-
             if (!await AreYouSureAsync())
             {
-                _activityService.TrackEvent($"{nameof(DeleteCommand)}", "action", "cancelled");
                 return;
             }
 
@@ -162,8 +156,6 @@ namespace GenericViewModels.ViewModels
         /// </summary>
         public virtual void BeginEdit()
         {
-            _activityService.TrackEvent($"{nameof(EditCommand)}");
-
             IsEditMode = true;
             TItem itemCopy = CreateCopy(Item);
             if (itemCopy != null)
@@ -179,8 +171,6 @@ namespace GenericViewModels.ViewModels
         /// </summary>
         public async virtual void CancelEdit()
         {
-            _activityService.TrackEvent($"{nameof(CancelCommand)}", "Item", Item.ToString());
-
             IsEditMode = false;
             EditItem = default;
             await _itemsService.RefreshAsync();
@@ -195,8 +185,6 @@ namespace GenericViewModels.ViewModels
         /// </summary>
         public async virtual void EndEdit()
         {
-            _activityService.TrackEvent($"{nameof(SaveCommand)}", "Item", Item.ToString());
-
             using (StartInProgress())
             {
                 await OnSaveCoreAsync();

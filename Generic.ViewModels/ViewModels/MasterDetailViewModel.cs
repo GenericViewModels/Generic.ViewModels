@@ -1,4 +1,3 @@
-using GenericViewModels.Extensions;
 using GenericViewModels.Services;
 using Prism.Commands;
 using System;
@@ -15,14 +14,11 @@ namespace GenericViewModels.ViewModels
     {
         private readonly IItemsService<TItem> _itemsService;
         private readonly ISelectedItemService<TItem> _selectedItemService;
-        private readonly IActivityService _activityService;
 
-
-        public MasterDetailViewModel(IItemsService<TItem> itemsService, ISelectedItemService<TItem> selectedItemService, IActivityService activityService)
+        public MasterDetailViewModel(IItemsService<TItem> itemsService, ISelectedItemService<TItem> selectedItemService)
         {
             _itemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
             _selectedItemService = selectedItemService ?? throw new ArgumentNullException(nameof(selectedItemService));
-            _activityService = activityService ?? throw new ArgumentNullException(nameof(activityService));
 
             _itemsService.Items.CollectionChanged += (sender, e) =>
             {
@@ -72,15 +68,13 @@ namespace GenericViewModels.ViewModels
 
         /// <summary>
         /// preparations for progress information,
-        /// invokes OnRefreshCoreAsync and sets the SelectedItem property
-        /// Invoked by the RefreshCommand
+        /// invokes <see cref="RefreshAsync"/> and sets the <see cref="SelectedItem"/> property
+        /// Invoked by the <see cref="RefreshCommand"/> 
         /// </summary>
         protected async void OnRefresh() => await RefreshAsync();
 
         private async Task RefreshAsync()
         {
-            _activityService.TrackEvent($"{nameof(RefreshCommand)}");
-
             using (StartInProgress())
             {
                 await OnRefreshCoreAsync();
@@ -98,12 +92,7 @@ namespace GenericViewModels.ViewModels
         /// <summary>
         /// Override <see cref="OnAddCoreAsync" to prepare adding an item/>
         /// </summary>
-        protected async void OnAdd()
-        {
-            _activityService.TrackEvent($"{nameof(AddCommand)}");
-
-            await OnAddCoreAsync();
-        }
+        protected async void OnAdd() => await OnAddCoreAsync();
 
         /// <summary>
         /// Override to create an implementation to add a new item
