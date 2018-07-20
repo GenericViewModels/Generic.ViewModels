@@ -1,4 +1,4 @@
-﻿using GenericViewModels.Core;
+using GenericViewModels.Core;
 using Prism.Mvvm;
 using System;
 using System.Threading;
@@ -13,6 +13,13 @@ namespace GenericViewModels.ViewModels
     {
         protected readonly AsyncEventSlim _initialized = new AsyncEventSlim();
 
+        /// <summary>
+        /// Override for special initialization.
+        /// Empty implementation with ViewModelBase
+        /// </summary>
+        /// <returns>a <see cref="Task"/></returns>
+        protected virtual Task InitCoreAsync() => Task.CompletedTask;
+
         public async Task InitAsync()
         {
             using (StartInProgress())
@@ -21,13 +28,6 @@ namespace GenericViewModels.ViewModels
                 _initialized.Signal();
             }
         }
-
-        /// <summary>
-        /// Override for special initialization.
-        /// Empty implementation with ViewModelBase
-        /// </summary>
-        /// <returns>a <see cref="Task"/></returns>
-        protected virtual Task InitCoreAsync() => Task.CompletedTask;
 
         #region Progress Information
         private class StateSetter : IDisposable
