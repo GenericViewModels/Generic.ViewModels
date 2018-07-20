@@ -1,4 +1,5 @@
-﻿using GenericViewModels.Services;
+﻿using GenericViewModels.Extensions;
+using GenericViewModels.Services;
 using Prism.Commands;
 using System;
 using System.ComponentModel;
@@ -11,11 +12,13 @@ namespace GenericViewModels.ViewModels
     {
         private readonly IItemsService<TItem> _itemsService;
         private readonly ISelectedItemService<TItem> _selectedItemService;
+        private readonly IActivityService _activityService;
 
-        public EditableItemViewModel(IItemsService<TItem> itemsService, ISelectedItemService<TItem> selectedItemService)
+        public EditableItemViewModel(IItemsService<TItem> itemsService, ISelectedItemService<TItem> selectedItemService, IActivityService activityService)
         {
             _itemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
             _selectedItemService = selectedItemService ?? throw new ArgumentNullException(nameof(selectedItemService));
+            _activityService = activityService ?? throw new ArgumentNullException(nameof(activityService));
 
             Item = _selectedItemService.SelectedItem;
 
@@ -31,7 +34,7 @@ namespace GenericViewModels.ViewModels
             CancelCommand = new DelegateCommand(CancelEdit, () => IsEditMode);
             SaveCommand = new DelegateCommand(EndEdit, () => IsEditMode);
             AddCommand = new DelegateCommand(OnAdd, () => IsReadMode);
-            DeleteCommand = new DelegateCommand(OnDelete);
+            DeleteCommand = new DelegateCommand(OnDelete, () => IsEditMode);
         }
 
         public DelegateCommand AddCommand { get; }
@@ -40,15 +43,27 @@ namespace GenericViewModels.ViewModels
         public DelegateCommand SaveCommand { get; }
         public DelegateCommand DeleteCommand { get; }
 
-        protected abstract Task OnDeleteCoreAsync();
+
         /// <summary>
         /// Overriding this method is required to start the OnDelete method
         /// </summary>
         /// <returns>A <see cref="Task"/></returns>
         protected virtual Task<bool> AreYouSureAsync() => Task.FromResult(false);
-        private async void OnDelete()
+
+        /// <summary>
+        /// Override this method for an implementation of the delete functionality, e.g. to call a service
+        /// </summary>
+        /// <returns>A <see cref="Task"/></returns>
+        protected abstract Task OnDeleteCoreAsync();
+        protected async void OnDelete()
         {
-            if (!await AreYouSureAsync()) return;
+            _activityService.TrackEvent($"{nameof(DeleteCommand)}");
+
+            if (!await AreYouSureAsync())
+            {
+                _activityService.TrackEvent($"{nameof(DeleteCommand)}", "action", "cancelled");
+                return;
+            }
 
             using (StartInProgress())
             {
@@ -61,7 +76,14 @@ namespace GenericViewModels.ViewModels
 
         #region Edit / Read Mode
         private bool _isEditMode;
+        /// <summary>
+        /// Returns true if the item is in read mode
+        /// </summary>
         public bool IsReadMode => !IsEditMode;
+
+        /// <summary>
+        /// Returns true if the item is in edit mode
+        /// </summary>
         public bool IsEditMode
         {
             get => _isEditMode;
@@ -81,6 +103,7 @@ namespace GenericViewModels.ViewModels
 
         #region Copy Item for Edit Mode
         private TItem _editItem;
+
         /// <summary>
         /// EditItem returns the Item in read mode
         /// and contains a copy of the Item in edit mode
@@ -93,17 +116,39 @@ namespace GenericViewModels.ViewModels
 
         #endregion
 
+        /// <summary>
+        /// Implement to create a copy of the item to be used by the IEditableObject implementation
+        /// </summary>
+        /// <param name="item">The item to copy</param>
+        /// <returns>The copied item</returns>
         protected abstract TItem CreateCopy(TItem item);
 
         #region Overrides Needed By Derived Class
         /// <summary>
-        /// override for an implementation to save the EditItem
+        /// Override for an implementation to save the EditItem, e.g. to invoke a service to store the item
         /// </summary>
-        /// <returns>a task</returns>
+        /// <returns>A <see cref="Task"/></returns>
         protected abstract Task OnSaveCoreAsync();
-        protected virtual Task OnEndEditAsync() => Task.CompletedTask;
-        protected async void OnAdd() => await OnAddCoreAsync();
 
+        /// <summary>
+        /// Override for an implementation to be invoked from the EndEdit method (implementation of IEditableObject).
+        /// This method is invoked at the end of the EndEdit method before progress completion
+        /// </summary>
+        /// <returns>A <see cref="Task"/></returns>
+        protected virtual Task OnEndEditAsync() => Task.CompletedTask;
+
+        /// <summary>
+        /// Invoked from the AddCommand. Implement <see cref="OnAddCoreAsync"/>
+        /// </summary>
+        protected async void OnAdd()
+        {
+            await OnAddCoreAsync();
+        }
+
+        /// <summary>
+        /// Create an implementation to 
+        /// </summary>
+        /// <returns>A <see cref="Task"/></returns>
         protected virtual Task OnAddCoreAsync() => Task.CompletedTask;
 
         #endregion
@@ -117,6 +162,8 @@ namespace GenericViewModels.ViewModels
         /// </summary>
         public virtual void BeginEdit()
         {
+            _activityService.TrackEvent($"{nameof(EditCommand)}");
+
             IsEditMode = true;
             TItem itemCopy = CreateCopy(Item);
             if (itemCopy != null)
@@ -132,8 +179,10 @@ namespace GenericViewModels.ViewModels
         /// </summary>
         public async virtual void CancelEdit()
         {
+            _activityService.TrackEvent($"{nameof(CancelCommand)}", "Item", Item.ToString());
+
             IsEditMode = false;
-            EditItem = default(TItem);
+            EditItem = default;
             await _itemsService.RefreshAsync();
             await OnEndEditAsync();
         }
@@ -146,10 +195,12 @@ namespace GenericViewModels.ViewModels
         /// </summary>
         public async virtual void EndEdit()
         {
+            _activityService.TrackEvent($"{nameof(SaveCommand)}", "Item", Item.ToString());
+
             using (StartInProgress())
             {
                 await OnSaveCoreAsync();
-                EditItem = default(TItem);
+                EditItem = default;
                 IsEditMode = false;
                 await _itemsService.RefreshAsync();
                 Item = _selectedItemService.SelectedItem;
