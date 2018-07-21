@@ -2,6 +2,7 @@
 using Prism.Commands;
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace GenericViewModels.ViewModels
@@ -63,6 +64,7 @@ namespace GenericViewModels.ViewModels
             {
                 await OnDeleteCoreAsync();
                 await _itemsService.RefreshAsync();
+                _selectedItemService.SelectedItem = _itemsService.Items.FirstOrDefault();
                 Item = _selectedItemService.SelectedItem;
                 await OnEndEditAsync();
             }
