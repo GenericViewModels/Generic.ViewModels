@@ -10,10 +10,13 @@ namespace GenericViewModels.Services
         protected AsyncEventSlim _initialized = new AsyncEventSlim();
         private readonly ISharedItemsService<T> _sharedItemsService;
 
-        public event EventHandler<EventArgs> ItemsRefreshed;
+        public event EventHandler<EventArgs> ItemsRefreshed
+        {
+            add => _sharedItemsService.ItemsRefreshed += value;
+            remove => _sharedItemsService.ItemsRefreshed -= value;
+        }
 
-        protected void RaiseItemsRefreshed()
-            => ItemsRefreshed?.Invoke(this, new EventArgs());
+        protected void RaiseItemsRefreshed() => _sharedItemsService.RaiseItemsRefreshed();
 
         public ItemsService(ISharedItemsService<T> sharedItemsService)
         {

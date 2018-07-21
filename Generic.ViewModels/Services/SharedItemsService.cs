@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 
 namespace GenericViewModels.Services
 {
@@ -6,5 +7,9 @@ namespace GenericViewModels.Services
     {
         private readonly ObservableCollection<T> _items = new ObservableCollection<T>();
         public virtual ObservableCollection<T> Items => _items;
+
+        public event EventHandler<EventArgs> ItemsRefreshed;
+
+        public void RaiseItemsRefreshed() => ItemsRefreshed?.Invoke(this, new EventArgs());
     }
 }
