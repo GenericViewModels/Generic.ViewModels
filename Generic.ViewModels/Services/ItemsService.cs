@@ -10,6 +10,8 @@ namespace GenericViewModels.Services
         protected AsyncEventSlim _initialized = new AsyncEventSlim();
         private readonly ISharedItemsService<T> _sharedItemsService;
 
+        public event EventHandler<EventArgs> ItemsRefreshed;
+
         public ItemsService(ISharedItemsService<T> sharedItemsService)
         {
             _sharedItemsService = sharedItemsService ?? throw new ArgumentNullException(nameof(sharedItemsService));
@@ -38,10 +40,33 @@ namespace GenericViewModels.Services
         /// <returns>A <see cref="Task" that is completed when the event is signalled/></returns>
         protected virtual Task InitCoreAsync() => Task.CompletedTask;
 
+        /// <summary>
+        /// Items from the <see cref="ISharedItemsService{T}"/>
+        /// </summary>
         public virtual ObservableCollection<T> Items => _sharedItemsService.Items;
 
+        /// <summary>
+        /// Override to add or update an item.
+        /// </summary>
+        /// <param name="item">The item to be added or updated</param>
+        /// <returns>A <see cref="Task"/></returns>
         public virtual Task<T> AddOrUpdateAsync(T item) => Task.FromResult<T>(default);
+
+        /// <summary>
+        /// Override to delete the item.
+        /// </summary>
+        /// <param name="item">The item to delete</param>
+        /// <returns>A <see cref="Task"/></returns>
         public virtual Task DeleteAsync(T item) => Task.FromResult<T>(default);
-        public virtual Task RefreshAsync() => Task.FromResult<T>(default);
+
+        /// <summary>
+        /// Override to implement refreshing asyncs. Invoke this method to fire the ItemsRefreshed event.
+        /// </summary>
+        /// <returns>A <see cref="Task"/></returns>
+        public virtual Task RefreshAsync()
+        {
+            ItemsRefreshed?.Invoke(this, new EventArgs());
+            return Task.FromResult<T>(default);
+        }
     }
 }

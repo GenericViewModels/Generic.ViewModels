@@ -6,6 +6,8 @@ namespace GenericViewModels.Services
 {
     public interface IItemsService<T>
     {
+        event EventHandler<EventArgs> ItemsRefreshed;
+
         Task RefreshAsync();
 
         Task<T> AddOrUpdateAsync(T item);
