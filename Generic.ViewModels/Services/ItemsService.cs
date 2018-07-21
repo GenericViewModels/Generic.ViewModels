@@ -12,6 +12,9 @@ namespace GenericViewModels.Services
 
         public event EventHandler<EventArgs> ItemsRefreshed;
 
+        protected void RaiseItemsRefreshed()
+            => ItemsRefreshed?.Invoke(this, new EventArgs());
+
         public ItemsService(ISharedItemsService<T> sharedItemsService)
         {
             _sharedItemsService = sharedItemsService ?? throw new ArgumentNullException(nameof(sharedItemsService));
@@ -65,7 +68,7 @@ namespace GenericViewModels.Services
         /// <returns>A <see cref="Task"/></returns>
         public virtual Task RefreshAsync()
         {
-            ItemsRefreshed?.Invoke(this, new EventArgs());
+            RaiseItemsRefreshed();
             return Task.FromResult<T>(default);
         }
     }
