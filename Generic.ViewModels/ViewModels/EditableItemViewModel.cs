@@ -31,7 +31,7 @@ namespace GenericViewModels.ViewModels
             CancelCommand = new DelegateCommand(CancelEdit, () => IsEditMode);
             SaveCommand = new DelegateCommand(EndEdit, () => IsEditMode);
             AddCommand = new DelegateCommand(OnAdd, () => IsReadMode);
-            DeleteCommand = new DelegateCommand(OnDelete, () => IsEditMode);
+            DeleteCommand = new DelegateCommand(OnDelete);
         }
 
         public DelegateCommand AddCommand { get; }
