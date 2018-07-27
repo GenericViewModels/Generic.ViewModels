@@ -11,9 +11,9 @@ namespace GenericViewModels.ViewModels
         where TItem : class
     {
         private readonly IItemsService<TItem> _itemsService;
-        private readonly ISelectedItemService<TItem> _selectedItemService;
+        private readonly ISelectedItem<TItem> _selectedItemService;
 
-        public EditableItemViewModel(IItemsService<TItem> itemsService, ISelectedItemService<TItem> selectedItemService)
+        public EditableItemViewModel(IItemsService<TItem> itemsService, ISelectedItem<TItem> selectedItemService)
         {
             _itemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
             _selectedItemService = selectedItemService ?? throw new ArgumentNullException(nameof(selectedItemService));

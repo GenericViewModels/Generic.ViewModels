@@ -3,10 +3,10 @@ using System.Collections.Generic;
 
 namespace GenericViewModels.Services
 {
-    public class SelectedItemService<T> : ISelectedItemService<T>
+    public class SelectedItemState<T> : ISelectedItem<T>
     {
         private T _selectedItem;
-        public T SelectedItem
+        public virtual T SelectedItem
         {
             get => _selectedItem;
             set

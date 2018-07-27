@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 
 namespace GenericViewModels.Services
 {
-    public interface ISharedItemsService<T>
+    public interface ISharedItems<T>
     {
         ObservableCollection<T> Items { get; }
 

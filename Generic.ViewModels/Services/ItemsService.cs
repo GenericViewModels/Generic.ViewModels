@@ -8,7 +8,7 @@ namespace GenericViewModels.Services
     public abstract class ItemsService<T> : IItemsService<T>
     {
         protected AsyncEventSlim _initialized = new AsyncEventSlim();
-        private readonly ISharedItemsService<T> _sharedItemsService;
+        private readonly ISharedItems<T> _sharedItemsService;
 
         public event EventHandler<EventArgs> ItemsRefreshed
         {
@@ -18,7 +18,7 @@ namespace GenericViewModels.Services
 
         protected void RaiseItemsRefreshed() => _sharedItemsService.RaiseItemsRefreshed();
 
-        public ItemsService(ISharedItemsService<T> sharedItemsService)
+        public ItemsService(ISharedItems<T> sharedItemsService)
         {
             _sharedItemsService = sharedItemsService ?? throw new ArgumentNullException(nameof(sharedItemsService));
         }

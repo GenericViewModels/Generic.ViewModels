@@ -13,12 +13,12 @@ namespace GenericViewModels.ViewModels
         where TItem : class
     {
         private readonly IItemsService<TItem> _itemsService;
-        private readonly ISelectedItemService<TItem> _selectedItemService;
+        private readonly ISelectedItem<TItem> _selectedItem;
 
-        public MasterDetailViewModel(IItemsService<TItem> itemsService, ISelectedItemService<TItem> selectedItemService)
+        public MasterDetailViewModel(IItemsService<TItem> itemsService, ISelectedItem<TItem> selectedItem)
         {
             _itemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
-            _selectedItemService = selectedItemService ?? throw new ArgumentNullException(nameof(selectedItemService));
+            _selectedItem = selectedItem ?? throw new ArgumentNullException(nameof(selectedItem));
 
             _itemsService.Items.CollectionChanged += (sender, e) =>
             {
@@ -42,12 +42,12 @@ namespace GenericViewModels.ViewModels
 
         public virtual TItem SelectedItem
         {
-            get => _selectedItemService.SelectedItem;
+            get => _selectedItem.SelectedItem;
             set
             {
-                if (!EqualityComparer<TItem>.Default.Equals(_selectedItemService.SelectedItem, value))
+                if (!EqualityComparer<TItem>.Default.Equals(_selectedItem.SelectedItem, value))
                 {
-                    _selectedItemService.SelectedItem = value;
+                    _selectedItem.SelectedItem = value;
                     RaisePropertyChanged();
                     RaisePropertyChanged(nameof(SelectedItemViewModel));
                 }
@@ -56,7 +56,7 @@ namespace GenericViewModels.ViewModels
 
         public virtual TItemViewModel SelectedItemViewModel
         {
-            get => ToViewModel(_selectedItemService.SelectedItem);
+            get => ToViewModel(_selectedItem.SelectedItem);
             set
             {
                 if (value != null && !EqualityComparer<TItem>.Default.Equals(SelectedItem, value.Item))
@@ -78,7 +78,6 @@ namespace GenericViewModels.ViewModels
             using (StartInProgress())
             {
                 await OnRefreshCoreAsync();
-                SelectedItem = _itemsService.Items.FirstOrDefault();
             }
         }
 
