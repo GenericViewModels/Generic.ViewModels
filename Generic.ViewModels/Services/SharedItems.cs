@@ -12,30 +12,30 @@ namespace GenericViewModels.Services
             Debug.WriteLine($"SharedItems ctor with {typeof(T).Name}");
         }
 
-        private readonly static ObservableCollection<T> s_items = new ObservableCollection<T>();
-        public virtual ObservableCollection<T> Items => s_items;
+        private readonly ObservableCollection<T> _items = new ObservableCollection<T>();
+        public virtual ObservableCollection<T> Items => _items;
 
         public event EventHandler<EventArgs> ItemsRefreshed;
 
         public void RaiseItemsRefreshed() => ItemsRefreshed?.Invoke(this, new EventArgs());
 
-        private static T s_selectedItem;
-        private static object s_lockSelection = new object();
+        private T _selectedItem;
+        private object _lockSelection = new object();
         public virtual T SelectedItem
         {
             get
             {
-                lock (s_lockSelection)
+                lock (_lockSelection)
                 {
-                    return s_selectedItem;
+                    return _selectedItem;
                 }
             }
 
             set
             {
-                lock (s_lockSelection)
+                lock (_lockSelection)
                 {
-                    SetProperty(ref s_selectedItem, value);
+                    SetProperty(ref _selectedItem, value);
                 }
             }
         }
