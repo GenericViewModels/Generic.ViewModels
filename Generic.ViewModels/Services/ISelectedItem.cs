@@ -1,10 +1,12 @@
 ﻿using System;
+using System.ComponentModel;
 
 namespace GenericViewModels.Services
 {
-    public interface ISelectedItem<T>
+    [Obsolete("Use ISharedItems instead")]
+    public interface ISelectedItem<T> : INotifyPropertyChanged
     {
         T SelectedItem { get; set; }
-        event EventHandler<T> SelectedItemChanged;
+
     }
 }

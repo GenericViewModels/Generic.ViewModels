@@ -1,4 +1,5 @@
 using GenericViewModels.Services;
+using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using System;
 using System.Collections.Generic;
@@ -12,13 +13,32 @@ namespace GenericViewModels.ViewModels
         where TItemViewModel : IItemViewModel<TItem>
         where TItem : class
     {
-        private readonly IItemsService<TItem> _itemsService;
-        private readonly ISelectedItem<TItem> _selectedItem;
+        protected readonly IItemsService<TItem> _itemsService;
+        protected readonly ISharedItems<TItem> _sharedItems;
+        private readonly ILogger<MasterDetailViewModel<TItemViewModel, TItem>> _logger;
 
-        public MasterDetailViewModel(IItemsService<TItem> itemsService, ISelectedItem<TItem> selectedItem)
+        public MasterDetailViewModel(
+            IItemsService<TItem> itemsService, 
+            ISharedItems<TItem> sharedItems,
+            IShowProgressInfo showProgressInfo,
+            ILoggerFactory loggerFactory)
+            : base(showProgressInfo)
         {
             _itemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
-            _selectedItem = selectedItem ?? throw new ArgumentNullException(nameof(selectedItem));
+            _sharedItems = sharedItems ?? throw new ArgumentNullException(nameof(sharedItems));
+            _logger = loggerFactory?.CreateLogger<MasterDetailViewModel<TItemViewModel, TItem>>() ?? throw new ArgumentNullException(nameof(loggerFactory));
+
+            _logger.LogTrace("ctor MasterDetailViewModel");
+
+            _sharedItems.PropertyChanged += (sender, e) =>
+            {
+                if (e.PropertyName == "SelectedItem")
+                {
+                    _logger.LogTrace($"SelectedItem change event received in MasterDetailViewModel with {SelectedItem}");
+                    RaisePropertyChanged(nameof(SelectedItem));
+                    RaisePropertyChanged(nameof(SelectedItemViewModel));
+                }
+            };
 
             _itemsService.Items.CollectionChanged += (sender, e) =>
             {
@@ -42,25 +62,22 @@ namespace GenericViewModels.ViewModels
 
         public virtual TItem SelectedItem
         {
-            get => _selectedItem.SelectedItem;
+            get => _sharedItems.SelectedItem;
             set
             {
-                if (!EqualityComparer<TItem>.Default.Equals(_selectedItem.SelectedItem, value))
-                {
-                    _selectedItem.SelectedItem = value;
-                    RaisePropertyChanged();
-                    RaisePropertyChanged(nameof(SelectedItemViewModel));
-                }
+                _logger.LogTrace($"{nameof(SelectedItem)} updating to {value}");
+                _sharedItems.SelectedItem = value;
             }
         }
 
         public virtual TItemViewModel SelectedItemViewModel
         {
-            get => ToViewModel(_selectedItem.SelectedItem);
+            get => ToViewModel(_sharedItems.SelectedItem);
             set
             {
                 if (value != null && !EqualityComparer<TItem>.Default.Equals(SelectedItem, value.Item))
                 {
+                    _logger.LogTrace($"SelectedItemViewModel updating to item {value?.Item}");
                     SelectedItem = value.Item;
                 }
             }
@@ -75,9 +92,13 @@ namespace GenericViewModels.ViewModels
 
         private async Task RefreshAsync()
         {
-            using (StartInProgress())
+            _logger.LogTrace($"{nameof(RefreshAsync)}");
+
+            using (_showProgressInfo.StartInProgress(ProgressInfoName))
             {
                 await OnRefreshCoreAsync();
+                _logger.LogTrace($"{nameof(RefreshAsync)}");
+
             }
         }
 
@@ -85,8 +106,12 @@ namespace GenericViewModels.ViewModels
         /// Invokes RefreshAsync of the IItemsService service. Override for more refresh needs.
         /// </summary>
         /// <returns>> <see cref="Task"/></returns>
-        protected virtual async Task OnRefreshCoreAsync() =>
+        protected virtual async Task OnRefreshCoreAsync()
+        {
+            _logger.LogTrace($"{nameof(OnRefreshCoreAsync)}");
+
             await _itemsService.RefreshAsync();
+        }
 
         /// <summary>
         /// Override <see cref="OnAddCoreAsync" to prepare adding an item/>

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace GenericViewModels.Services
 {
+    [Obsolete("use SharedItem instead")]
     public class SelectedItemState<T> : ISelectedItem<T>
     {
         private T _selectedItem;
@@ -14,11 +16,11 @@ namespace GenericViewModels.Services
                 if (!EqualityComparer<T>.Default.Equals(_selectedItem, value))
                 {
                     _selectedItem = value;
-                    SelectedItemChanged?.Invoke(this, _selectedItem);
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedItem)));
                 }
             }
         }
 
-        public event EventHandler<T> SelectedItemChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

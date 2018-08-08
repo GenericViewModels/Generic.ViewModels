@@ -1,4 +1,5 @@
 ﻿using GenericViewModels.Core;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ namespace GenericViewModels.Services
     {
         protected AsyncEventSlim _initialized = new AsyncEventSlim();
         private readonly ISharedItems<T> _sharedItemsService;
+        private readonly ILogger<ItemsService<T>> _logger;
 
         public event EventHandler<EventArgs> ItemsRefreshed
         {
@@ -18,9 +20,10 @@ namespace GenericViewModels.Services
 
         protected void RaiseItemsRefreshed() => _sharedItemsService.RaiseItemsRefreshed();
 
-        public ItemsService(ISharedItems<T> sharedItemsService)
+        public ItemsService(ISharedItems<T> sharedItemsService, ILoggerFactory loggerFactory)
         {
             _sharedItemsService = sharedItemsService ?? throw new ArgumentNullException(nameof(sharedItemsService));
+            _logger = loggerFactory?.CreateLogger<ItemsService<T>>() ?? throw new ArgumentNullException(nameof(loggerFactory));
         }
 
         /// <summary>
@@ -71,6 +74,7 @@ namespace GenericViewModels.Services
         /// <returns>A <see cref="Task"/></returns>
         public virtual Task RefreshAsync()
         {
+            _logger.LogTrace("RefreshAsync - firing ItemsRefreshed event");
             RaiseItemsRefreshed();
             return Task.FromResult<T>(default);
         }

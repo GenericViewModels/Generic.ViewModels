@@ -1,4 +1,6 @@
-﻿namespace GenericViewModels.ViewModels
+﻿using GenericViewModels.Services;
+
+namespace GenericViewModels.ViewModels
 {
     /// <summary>
     /// base class for view-models that shows a single item
@@ -6,11 +8,14 @@
     /// <typeparam name="T">Item type for the view-model to display</typeparam>
     public abstract class ItemViewModel<T> : ViewModelBase, IItemViewModel<T>
     {
-        public ItemViewModel()
+        public ItemViewModel(IShowProgressInfo showProgressInfo)
+            : base(showProgressInfo)
         {
 
         }
-        public ItemViewModel(T item) => Item = item;
+        public ItemViewModel(T item, IShowProgressInfo showProgressInfo) 
+            : base(showProgressInfo)
+            => Item = item;
 
         private T _item;
         public virtual T Item

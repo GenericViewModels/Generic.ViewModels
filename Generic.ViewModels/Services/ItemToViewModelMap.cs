@@ -1,18 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Concurrent;
 
 namespace Generic.ViewModels.Services
 {
-    public class ItemToViewModelMap<T, TViewModel> : IItemToViewModelMap<T, TViewModel>
+    public abstract class ItemToViewModelMap<T, TViewModel> : IItemToViewModelMap<T, TViewModel>
     {
-        private readonly Dictionary<T, TViewModel> _map = new Dictionary<T, TViewModel>();
+        private static readonly ConcurrentDictionary<T, TViewModel> s_map = new ConcurrentDictionary<T, TViewModel>();
        
         public void Add(T item, TViewModel viewModel)
         {
-            if (!_map.ContainsKey(item))
+            if (item == default) return;
+
+            if (!s_map.ContainsKey(item))
             {
-                _map.Add(item, viewModel);
+                s_map.TryAdd(item, viewModel);
             }
         }
 
@@ -23,9 +23,19 @@ namespace Generic.ViewModels.Services
                 return default;
             }
 
-            return _map[item];
+            if (s_map.TryGetValue(item, out TViewModel value))
+            {
+                return value;
+            }
+            else
+            {
+                s_map.TryAdd(item, CreateViewModel(item));
+                return s_map[item];
+            }
         }
 
-        public void Reset() => _map.Clear();
+        protected abstract TViewModel CreateViewModel(T item);
+
+        public void Reset() => s_map.Clear();
     }
 }

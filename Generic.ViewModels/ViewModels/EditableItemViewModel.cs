@@ -1,4 +1,5 @@
 ﻿using GenericViewModels.Services;
+using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using System;
 using System.ComponentModel;
@@ -11,20 +12,37 @@ namespace GenericViewModels.ViewModels
         where TItem : class
     {
         private readonly IItemsService<TItem> _itemsService;
-        private readonly ISelectedItem<TItem> _selectedItemService;
+        private readonly ISharedItems<TItem> _sharedItems;
+        private readonly ILogger<EditableItemViewModel<TItem>> _logger;
 
-        public EditableItemViewModel(IItemsService<TItem> itemsService, ISelectedItem<TItem> selectedItemService)
+        public EditableItemViewModel(
+            IItemsService<TItem> itemsService,
+            ISharedItems<TItem> sharedItems,
+            IShowProgressInfo showProgressInfo,
+            ILoggerFactory loggerFactory)
+            : base(showProgressInfo)
         {
             _itemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
-            _selectedItemService = selectedItemService ?? throw new ArgumentNullException(nameof(selectedItemService));
+            _sharedItems = sharedItems ?? throw new ArgumentNullException(nameof(sharedItems));
+            _logger = loggerFactory?.CreateLogger<EditableItemViewModel<TItem>>() ?? throw new ArgumentNullException(nameof(loggerFactory));
 
-            Item = _selectedItemService.SelectedItem;
+            _logger.LogTrace("ctor EditableItemViewModel");
+
+            _sharedItems.PropertyChanged += (sender, e) =>
+            {
+                if (e.PropertyName == "SelectedItem")
+                {
+                    Item = _sharedItems.SelectedItem;
+                    _logger.LogTrace($"PropertyChanged event from shareditems with SelectedItem received, changed Item to {Item}");
+                }
+            };
 
             PropertyChanged += (sender, e) =>
             {
                 if (e.PropertyName == nameof(Item))
                 {
                     RaisePropertyChanged(nameof(EditItem));
+                    _logger.LogTrace($"PropertyChanged event with Item received, firing change event on EditItem");
                 }
             };
 
@@ -34,6 +52,7 @@ namespace GenericViewModels.ViewModels
             AddCommand = new DelegateCommand(OnAdd, () => IsReadMode);
             DeleteCommand = new DelegateCommand(OnDelete);
         }
+
 
         public DelegateCommand AddCommand { get; }
         public DelegateCommand EditCommand { get; }
@@ -60,14 +79,26 @@ namespace GenericViewModels.ViewModels
                 return;
             }
 
-            using (StartInProgress())
+            using (_showProgressInfo.StartInProgress(ProgressInfoName))
             {
                 await OnDeleteCoreAsync();
                 await _itemsService.RefreshAsync();
-                _selectedItemService.SelectedItem = _itemsService.Items.FirstOrDefault();
-                Item = _selectedItemService.SelectedItem;
+                SetSelectedItem(_sharedItems.Items.FirstOrDefault());
+
                 await OnEndEditAsync();
             }
+        }
+
+        /// <summary>
+        /// Sets the SelectedItem in SharedItems.SelectedItems
+        /// </summary>
+        protected virtual void SetSelectedItem(TItem item)
+        {
+            _logger.LogTrace($"SetSelectedItem - set selected and Item property to {item}");
+
+            if (item == null) return;
+            _sharedItems.SelectedItem = item;
+            Item = item;
         }
 
         #region Edit / Read Mode
@@ -80,10 +111,10 @@ namespace GenericViewModels.ViewModels
         /// <summary>
         /// Returns true if the item is in edit mode
         /// </summary>
-        public bool IsEditMode
+        public virtual bool IsEditMode
         {
             get => _isEditMode;
-            private set
+            protected set
             {
                 if (SetProperty(ref _isEditMode, value))
                 {
@@ -134,7 +165,7 @@ namespace GenericViewModels.ViewModels
         protected virtual Task OnEndEditAsync() => Task.CompletedTask;
 
         /// <summary>
-        /// Invoked from the AddCommand. Implement <see cref="OnAddCoreAsync"/>
+        /// Invoked from the AddCommand. Invokes <see cref="OnAddCoreAsync"/>. Override this method for an implementation" />
         /// </summary>
         protected async void OnAdd()
         {
@@ -142,7 +173,7 @@ namespace GenericViewModels.ViewModels
         }
 
         /// <summary>
-        /// Create an implementation to 
+        /// Create an implementation to ...
         /// </summary>
         /// <returns>A <see cref="Task"/></returns>
         protected virtual Task OnAddCoreAsync() => Task.CompletedTask;
@@ -158,6 +189,10 @@ namespace GenericViewModels.ViewModels
         /// </summary>
         public virtual void BeginEdit()
         {
+            _logger.LogTrace($"{nameof(BeginEdit)}, creating a copy of {Item}");
+
+            if (Item == null) return;  // nothing selected
+
             IsEditMode = true;
             TItem itemCopy = CreateCopy(Item);
             if (itemCopy != null)
@@ -173,9 +208,11 @@ namespace GenericViewModels.ViewModels
         /// </summary>
         public async virtual void CancelEdit()
         {
+            _logger.LogTrace($"{nameof(CancelEdit)} with {EditItem}");
+
             IsEditMode = false;
             EditItem = default;
-            await _itemsService.RefreshAsync();
+
             await OnEndEditAsync();
         }
 
@@ -187,13 +224,30 @@ namespace GenericViewModels.ViewModels
         /// </summary>
         public async virtual void EndEdit()
         {
-            using (StartInProgress())
+            _logger.LogTrace($"{nameof(EndEdit)} with {EditItem}");
+
+            using (_showProgressInfo.StartInProgress(ProgressInfoName))
             {
                 await OnSaveCoreAsync();
+                int index = _sharedItems.Items.IndexOf(Item);  // with a new created item, its not in the Items collection
+                if (index >= 0)
+                {
+                    _sharedItems.Items.RemoveAt(index);
+                }
+                Item = EditItem;
+                if (index >= 0)
+                {
+                    _sharedItems.Items.Insert(index, Item);
+                }
+                else
+                {
+                    _sharedItems.Items.Add(Item);
+                }
                 EditItem = default;
                 IsEditMode = false;
-                await _itemsService.RefreshAsync();
-                Item = _selectedItemService.SelectedItem;
+
+                SetSelectedItem(Item);
+
                 await OnEndEditAsync();
             }
         }
