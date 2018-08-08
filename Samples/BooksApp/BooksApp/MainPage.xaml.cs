@@ -1,5 +1,7 @@
 ﻿using BooksApp.ViewModels;
+using BooksLib.Events;
 using Microsoft.Extensions.DependencyInjection;
+using Prism.Events;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -8,6 +10,8 @@ namespace BooksApp
     public sealed partial class MainPage : Page
     {
         private IServiceScope _scope;
+        private IEventAggregator _eventAggregator;
+
         public MainPage()
         {
             InitializeComponent();
@@ -23,9 +27,8 @@ namespace BooksApp
 
         private void OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-
-            // TODO: IEventAggregator
-           // EventAggregator<NavigationInfoEvent>.Instance.Publish(this, new NavigationInfoEvent { UseNavigation = e.NewSize.Width < 1024 });
+            // width > 1024 - no navigation, use navigation with smaller windows
+            _eventAggregator.GetEvent<UseNavigationEvent>().Publish(e.NewSize.Width < 1024);
         }
     }
 }

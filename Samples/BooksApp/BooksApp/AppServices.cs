@@ -16,19 +16,25 @@ namespace BooksApp
         private AppServices()
         {
             var services = new ServiceCollection();
-            services.AddSingleton<IBooksRepository, BooksSampleRepository>();
-            services.AddTransient<IItemsService<Book>, BooksService>();
+
+            // view-models
             services.AddTransient<BooksViewModel>();
             services.AddTransient<BookDetailViewModel>();
             services.AddTransient<MainPageViewModel>();
-            services.AddSingleton<ISharedItems<Book>, SharedItems<Book>>();
+
+            // services
+            services.AddTransient<IItemsService<Book>, BooksService>();
             services.AddTransient<IShowProgressInfo, ShowProgressInfo>();
             services.AddTransient<IMessageService, UWPMessageService>();
             services.AddSingleton<INavigationService, UWPNavigationService>();
-            services.AddSingleton<IEventAggregator, EventAggregator>();
 
+            // stateful services
+            services.AddSingleton<ISharedItems<Book>, SharedItems<Book>>();
+            services.AddSingleton<IBooksRepository, BooksSampleRepository>();
+            services.AddSingleton<IEventAggregator, EventAggregator>();
             services.AddSingleton<UWPInitializeNavigationService>();
 
+            // logging configuration
             services.AddLogging(builder =>
             {
 #if DEBUG
@@ -38,6 +44,8 @@ namespace BooksApp
 
             ServiceProvider = services.BuildServiceProvider();
         }
+
+        public IServiceProvider ServiceProvider { get; }
 
         private static AppServices _instance;
         private static object _instanceLock = new object();
@@ -49,7 +57,5 @@ namespace BooksApp
             }
         }
         public static AppServices Instance => _instance ?? GetInstance();
-
-        public IServiceProvider ServiceProvider { get; }
     }
 }

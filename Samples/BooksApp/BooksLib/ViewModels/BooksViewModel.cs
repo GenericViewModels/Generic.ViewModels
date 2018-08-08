@@ -27,11 +27,10 @@ namespace BooksLib.ViewModels
             _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
             _eventAggregator = eventAggregator;
 
-            //// TODO: use event aggregator
-            //EventAggregator<NavigationInfoEvent>.Instance.Event += (sender, e) =>
-            //{
-            //    _navigationService.UseNavigation = e.UseNavigation;
-            //};
+            _eventAggregator.GetEvent<UseNavigationEvent>().Subscribe(useNavigation =>
+            {
+                _navigationService.UseNavigation = useNavigation;
+            });
 
             PropertyChanged += async (sender, e) =>
             {
