@@ -38,5 +38,6 @@
             </ListView.ItemTemplate>
         </ListView>
         <views:BookDetailUserControl x:Name="BookDetailUC" Visibility="Visible" Grid.Column="1" Grid.Row="1" Grid.RowSpan="2" />
+
     </Grid>
 </Window>

@@ -20,7 +20,8 @@ namespace BooksApp.ViewModels
 
         private readonly INavigationService _navigationService;
         private readonly UWPInitializeNavigationService _initializeNavigationService;
-        public MainPageViewModel(INavigationService navigationService, UWPInitializeNavigationService initializeNavigationService)
+        public MainPageViewModel(INavigationService navigationService, UWPInitializeNavigationService initializeNavigationService, IShowProgressInfo showProgressInfo)
+            : base(showProgressInfo)
         {
             _navigationService = navigationService;
             _initializeNavigationService = initializeNavigationService;

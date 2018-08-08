@@ -1,29 +1,50 @@
 ﻿using GenericViewModels.Core;
 using Microsoft.Extensions.Logging;
+using Prism.Mvvm;
 using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace GenericViewModels.Services
 {
-    public abstract class ItemsService<T> : IItemsService<T>
+    public abstract class ItemsService<T> : BindableBase, IItemsService<T>, IDisposable
     {
         protected AsyncEventSlim _initialized = new AsyncEventSlim();
-        private readonly ISharedItems<T> _sharedItemsService;
-        private readonly ILogger<ItemsService<T>> _logger;
+        private readonly ISharedItems<T> _sharedItems;
+        private readonly ILogger _logger;
+
+        public event EventHandler<SelectedItemEventArgs<T>> SelectedItemChanged;
 
         public event EventHandler<EventArgs> ItemsRefreshed
         {
-            add => _sharedItemsService.ItemsRefreshed += value;
-            remove => _sharedItemsService.ItemsRefreshed -= value;
+            add => _sharedItems.ItemsRefreshed += value;
+            remove => _sharedItems.ItemsRefreshed -= value;
         }
 
-        protected void RaiseItemsRefreshed() => _sharedItemsService.RaiseItemsRefreshed();
+        protected void RaiseItemsRefreshed() => _sharedItems.RaiseItemsRefreshed();
 
         public ItemsService(ISharedItems<T> sharedItemsService, ILoggerFactory loggerFactory)
         {
-            _sharedItemsService = sharedItemsService ?? throw new ArgumentNullException(nameof(sharedItemsService));
-            _logger = loggerFactory?.CreateLogger<ItemsService<T>>() ?? throw new ArgumentNullException(nameof(loggerFactory));
+            _sharedItems = sharedItemsService ?? throw new ArgumentNullException(nameof(sharedItemsService));
+            _logger = loggerFactory?.CreateLogger(GetType()) ?? throw new ArgumentNullException(nameof(loggerFactory));
+
+            _sharedItems.PropertyChanged += SharedItems_PropertyChanged;
+        }
+
+        public virtual void Dispose()
+        {
+            _sharedItems.PropertyChanged -= SharedItems_PropertyChanged;
+        }
+
+        private void SharedItems_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "SelectedItem")
+            {
+                _logger.LogTrace($"PropertyChanged event from shared items with SelectedItem received {SelectedItem}, firing SelectedItemChanged event");
+
+                SelectedItemChanged?.Invoke(this, new SelectedItemEventArgs<T>(SelectedItem));
+            }
         }
 
         /// <summary>
@@ -52,7 +73,13 @@ namespace GenericViewModels.Services
         /// <summary>
         /// Items from the <see cref="ISharedItemsService{T}"/>
         /// </summary>
-        public virtual ObservableCollection<T> Items => _sharedItemsService.Items;
+        public virtual ObservableCollection<T> Items => _sharedItems.Items;
+
+        public virtual T SelectedItem
+        {
+            get => _sharedItems.SelectedItem;
+            set => _sharedItems.SelectedItem = value;
+        }
 
         /// <summary>
         /// Override to add or update an item.

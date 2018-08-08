@@ -1,42 +1,29 @@
 ﻿using BooksLib.Models;
 using GenericViewModels.Services;
-using Prism.Mvvm;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace BooksLib.Services
 {
-    public class BooksService : BindableBase, IItemsService<Book>
-    {     
-        private ObservableCollection<Book> _books = new ObservableCollection<Book>();
-        private readonly IBooksRepository _booksRepository;
+    public class BooksService : ItemsService<Book>
+    {
+        private IBooksRepository _booksRepository;
+        private ILogger _logger;
 
-        public event EventHandler<Book> SelectedItemChanged;
-
-        public BooksService(IBooksRepository repository)
+        public BooksService(
+            IBooksRepository booksRepository,
+            ISharedItems<Book> booksItems, 
+            ILoggerFactory loggerFactory)
+            : base(booksItems, loggerFactory)
         {
-            _booksRepository = repository;
+            _booksRepository = booksRepository ?? throw new ArgumentNullException(nameof(booksRepository));
+            _logger = loggerFactory?.CreateLogger(GetType()) ?? throw new ArgumentNullException(nameof(loggerFactory));
         }
 
-        public ObservableCollection<Book> Items => _books;
-
-        private Book _selectedItem;
-        public Book SelectedItem
-        {
-            get => _selectedItem;
-            set
-            {
-                if (SetProperty(ref _selectedItem, value))
-                {
-                    SelectedItemChanged?.Invoke(this, _selectedItem);
-                }
-            }
-        }
-
-        public async Task<Book> AddOrUpdateAsync(Book book)
+        public override async Task<Book> AddOrUpdateAsync(Book book)
         {
             Book updated = null;
             if (book.BookId == 0)
@@ -50,18 +37,21 @@ namespace BooksLib.Services
             return updated;
         }
 
-        public Task DeleteAsync(Book book) =>
+        public override Task DeleteAsync(Book book) =>
             _booksRepository.DeleteAsync(book.BookId);
 
-        public async Task RefreshAsync()
+        public override async Task RefreshAsync()
         {
             IEnumerable<Book> books = await _booksRepository.GetItemsAsync();
-            _books.Clear();
+            Items.Clear();
+
             foreach (var book in books)
             {
-                _books.Add(book);
+                Items.Add(book);
             }
+           
             SelectedItem = Items.FirstOrDefault();
+            base.RefreshAsync();
         }
     }
 }

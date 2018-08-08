@@ -9,36 +9,25 @@ using System.Threading.Tasks;
 
 namespace GenericViewModels.ViewModels
 {
-    public abstract class MasterDetailViewModel<TItemViewModel, TItem> : ViewModelBase
+    public abstract class MasterDetailViewModel<TItemViewModel, TItem> : ViewModelBase, IDisposable
         where TItemViewModel : IItemViewModel<TItem>
         where TItem : class
     {
         protected readonly IItemsService<TItem> _itemsService;
-        protected readonly ISharedItems<TItem> _sharedItems;
         private readonly ILogger<MasterDetailViewModel<TItemViewModel, TItem>> _logger;
 
         public MasterDetailViewModel(
-            IItemsService<TItem> itemsService, 
-            ISharedItems<TItem> sharedItems,
+            IItemsService<TItem> itemsService,
             IShowProgressInfo showProgressInfo,
             ILoggerFactory loggerFactory)
             : base(showProgressInfo)
         {
             _itemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
-            _sharedItems = sharedItems ?? throw new ArgumentNullException(nameof(sharedItems));
             _logger = loggerFactory?.CreateLogger<MasterDetailViewModel<TItemViewModel, TItem>>() ?? throw new ArgumentNullException(nameof(loggerFactory));
 
             _logger.LogTrace("ctor MasterDetailViewModel");
 
-            _sharedItems.PropertyChanged += (sender, e) =>
-            {
-                if (e.PropertyName == "SelectedItem")
-                {
-                    _logger.LogTrace($"SelectedItem change event received in MasterDetailViewModel with {SelectedItem}");
-                    RaisePropertyChanged(nameof(SelectedItem));
-                    RaisePropertyChanged(nameof(SelectedItemViewModel));
-                }
-            };
+            _itemsService.SelectedItemChanged += ItemsService_SelectedItemChanged;
 
             _itemsService.Items.CollectionChanged += (sender, e) =>
             {
@@ -48,9 +37,21 @@ namespace GenericViewModels.ViewModels
             RefreshCommand = new DelegateCommand(OnRefresh);
             AddCommand = new DelegateCommand(OnAdd);
         }
-          
+
+        public virtual void Dispose()
+        {
+            _itemsService.SelectedItemChanged -= ItemsService_SelectedItemChanged;
+        }
+
+        private void ItemsService_SelectedItemChanged(object sender, SelectedItemEventArgs<TItem> e)
+        {
+            _logger.LogTrace($"SelectedItem change event received fom items service with {e.Item}");
+            RaisePropertyChanged(nameof(SelectedItem));
+            RaisePropertyChanged(nameof(SelectedItemViewModel));
+        }
+
         protected override Task InitCoreAsync() => RefreshAsync();
-  
+
         public DelegateCommand RefreshCommand { get; }
         public DelegateCommand AddCommand { get; }
 
@@ -62,17 +63,17 @@ namespace GenericViewModels.ViewModels
 
         public virtual TItem SelectedItem
         {
-            get => _sharedItems.SelectedItem;
+            get => _itemsService.SelectedItem;
             set
             {
                 _logger.LogTrace($"{nameof(SelectedItem)} updating to {value}");
-                _sharedItems.SelectedItem = value;
+                _itemsService.SelectedItem = value;
             }
         }
 
         public virtual TItemViewModel SelectedItemViewModel
         {
-            get => ToViewModel(_sharedItems.SelectedItem);
+            get => ToViewModel(_itemsService.SelectedItem);
             set
             {
                 if (value != null && !EqualityComparer<TItem>.Default.Equals(SelectedItem, value.Item))

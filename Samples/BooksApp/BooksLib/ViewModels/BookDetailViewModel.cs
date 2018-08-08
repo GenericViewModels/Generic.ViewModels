@@ -9,27 +9,39 @@ using System.Threading.Tasks;
 namespace BooksLib.ViewModels
 {
     // this view model is used to display details of a book and allows editing
-    public class BookDetailViewModel : EditableItemViewModel<Book>
+    public class BookDetailViewModel : EditableItemViewModel<Book>, IDisposable
     {
         private readonly IItemsService<Book> _itemsService;
-        private readonly ISelectedItemService<Book> _selectedItemService;
         private readonly INavigationService _navigationService;
         private readonly IMessageService _messageService;
         private readonly ILogger _logger;
-        public BookDetailViewModel(IItemsService<Book> itemsService, ISelectedItemService<Book> selectedItemService, INavigationService navigationService, IMessageService messageService, ILogger<BookDetailViewModel> logger)
-            : base(itemsService, selectedItemService)
+        public BookDetailViewModel(
+            IItemsService<Book> itemsService, 
+            INavigationService navigationService, 
+            IMessageService messageService, 
+            IShowProgressInfo showProgressInfo,
+            ILoggerFactory loggerFactory)
+            : base(itemsService, showProgressInfo, loggerFactory)
         {
             _itemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
-            _selectedItemService = selectedItemService ?? throw new ArgumentNullException(nameof(selectedItemService));
             _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _logger = loggerFactory.CreateLogger(this.GetType()) ?? throw new ArgumentNullException(nameof(loggerFactory));
 
-            _selectedItemService.SelectedItemChanged += (sender, book) =>
-            {
-                Item = book;
-            };
+            _itemsService.SelectedItemChanged += ItemsService_SelectedItemChanged;
         }
+
+        public override void Dispose()
+        {
+            _itemsService.SelectedItemChanged -= ItemsService_SelectedItemChanged;
+        }
+
+        private void ItemsService_SelectedItemChanged(object sender, SelectedItemEventArgs<Book> e)
+        {
+            Item = e.Item;
+        }
+
+
 
         public bool UseNavigation { get; set; }
 

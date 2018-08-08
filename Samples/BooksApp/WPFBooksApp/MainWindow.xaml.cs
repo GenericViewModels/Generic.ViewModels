@@ -1,19 +1,6 @@
 ﻿using BooksLib.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Microsoft.Extensions.DependencyInjection;
+using System.Windows;
 
 namespace WPFBooksApp
 {
@@ -22,13 +9,19 @@ namespace WPFBooksApp
     /// </summary>
     public partial class MainWindow : Window
     {
+        private IServiceScope _scope;
         public MainWindow()
         {
             InitializeComponent();
-            BookDetailUC.ViewModel = (Application.Current as App).AppServices.GetService<BookDetailViewModel>();
+            _scope = AppServices.Instance.ServiceProvider.CreateScope();
+            BookDetailUC.ViewModel = _scope.ServiceProvider.GetRequiredService<BookDetailViewModel>();
+            ViewModel = _scope.ServiceProvider.GetRequiredService<BooksViewModel>();
+            Closed += (sender, e) => _scope.Dispose();
+
             DataContext = this;
+            
         }
 
-        public BooksViewModel ViewModel { get; } = (Application.Current as App).AppServices.GetService<BooksViewModel>();
+        public BooksViewModel ViewModel { get; }
     }
 }

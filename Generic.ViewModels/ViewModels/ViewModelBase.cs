@@ -18,7 +18,6 @@ namespace GenericViewModels.ViewModels
         {
             _showProgressInfo = showProgressInfo ?? throw new ArgumentNullException(nameof(showProgressInfo));
 
-
             _showProgressInfo.ProgressInformationChanged += (sender, name) =>
             {
                 if (name == ProgressInfoName)
@@ -46,33 +45,6 @@ namespace GenericViewModels.ViewModels
                 _initialized.Signal();
             }
         }
-
-        //#region Progress Information
-
-
-        //private int _inProgressCounter = 0;
-        //[Obsolete("use IShowProgressInfo instead")]
-        //protected void SetInProgress(bool set = true)
-        //{
-        //    if (set)
-        //    {
-        //        Interlocked.Increment(ref _inProgressCounter);
-        //        RaisePropertyChanged(nameof(InProgress));
-        //    }
-        //    else
-        //    {
-        //        Interlocked.Decrement(ref _inProgressCounter);
-        //        RaisePropertyChanged(nameof(InProgress));
-        //    }
-        //}
-
-        //[Obsolete("use IShowProgressInfo instead")]
-        //public IDisposable StartInProgress() => 
-        //    new StartEndInvoker(() => SetInProgress(), () => SetInProgress(false));
-
-        //[Obsolete("use IShowProgressInfo instead")]
-        //public bool InProgress => _inProgressCounter != 0;
-        //#endregion
 
         public bool InProgress => _showProgressInfo.InProgress(ProgressInfoName);
 

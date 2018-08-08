@@ -8,41 +8,31 @@ using System.Threading.Tasks;
 
 namespace GenericViewModels.ViewModels
 {
-    public abstract class EditableItemViewModel<TItem> : ItemViewModel<TItem>, IEditableObject
+    public abstract class EditableItemViewModel<TItem> : ItemViewModel<TItem>, IEditableObject, IDisposable
         where TItem : class
     {
         private readonly IItemsService<TItem> _itemsService;
-        private readonly ISharedItems<TItem> _sharedItems;
         private readonly ILogger<EditableItemViewModel<TItem>> _logger;
 
         public EditableItemViewModel(
             IItemsService<TItem> itemsService,
-            ISharedItems<TItem> sharedItems,
             IShowProgressInfo showProgressInfo,
             ILoggerFactory loggerFactory)
             : base(showProgressInfo)
         {
             _itemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
-            _sharedItems = sharedItems ?? throw new ArgumentNullException(nameof(sharedItems));
             _logger = loggerFactory?.CreateLogger<EditableItemViewModel<TItem>>() ?? throw new ArgumentNullException(nameof(loggerFactory));
 
             _logger.LogTrace("ctor EditableItemViewModel");
 
-            _sharedItems.PropertyChanged += (sender, e) =>
-            {
-                if (e.PropertyName == "SelectedItem")
-                {
-                    Item = _sharedItems.SelectedItem;
-                    _logger.LogTrace($"PropertyChanged event from shareditems with SelectedItem received, changed Item to {Item}");
-                }
-            };
+            _itemsService.SelectedItemChanged += ItemsService_SelectedItemChanged;
 
             PropertyChanged += (sender, e) =>
             {
                 if (e.PropertyName == nameof(Item))
                 {
-                    RaisePropertyChanged(nameof(EditItem));
                     _logger.LogTrace($"PropertyChanged event with Item received, firing change event on EditItem");
+                    RaisePropertyChanged(nameof(EditItem));
                 }
             };
 
@@ -53,13 +43,22 @@ namespace GenericViewModels.ViewModels
             DeleteCommand = new DelegateCommand(OnDelete);
         }
 
+        public virtual void Dispose()
+        {
+            _itemsService.SelectedItemChanged -= ItemsService_SelectedItemChanged;
+        }
+
+        private void ItemsService_SelectedItemChanged(object sender, SelectedItemEventArgs<TItem> e)
+        {
+            _logger.LogTrace($"SelectedItemChanged event from items service received, setting Item to {e.Item}");
+            Item = e.Item;
+        }
 
         public DelegateCommand AddCommand { get; }
         public DelegateCommand EditCommand { get; }
         public DelegateCommand CancelCommand { get; }
         public DelegateCommand SaveCommand { get; }
         public DelegateCommand DeleteCommand { get; }
-
 
         /// <summary>
         /// Overriding this method is required to start the OnDelete method
@@ -83,7 +82,7 @@ namespace GenericViewModels.ViewModels
             {
                 await OnDeleteCoreAsync();
                 await _itemsService.RefreshAsync();
-                SetSelectedItem(_sharedItems.Items.FirstOrDefault());
+                SetSelectedItem(_itemsService.Items.FirstOrDefault());
 
                 await OnEndEditAsync();
             }
@@ -97,7 +96,7 @@ namespace GenericViewModels.ViewModels
             _logger.LogTrace($"SetSelectedItem - set selected and Item property to {item}");
 
             if (item == null) return;
-            _sharedItems.SelectedItem = item;
+            _itemsService.SelectedItem = item;
             Item = item;
         }
 
@@ -229,19 +228,19 @@ namespace GenericViewModels.ViewModels
             using (_showProgressInfo.StartInProgress(ProgressInfoName))
             {
                 await OnSaveCoreAsync();
-                int index = _sharedItems.Items.IndexOf(Item);  // with a new created item, its not in the Items collection
+                int index = _itemsService.Items.IndexOf(Item);  // with a new created item, its not in the Items collection
                 if (index >= 0)
                 {
-                    _sharedItems.Items.RemoveAt(index);
+                    _itemsService.Items.RemoveAt(index);
                 }
                 Item = EditItem;
                 if (index >= 0)
                 {
-                    _sharedItems.Items.Insert(index, Item);
+                    _itemsService.Items.Insert(index, Item);
                 }
                 else
                 {
-                    _sharedItems.Items.Add(Item);
+                    _itemsService.Items.Add(Item);
                 }
                 EditItem = default;
                 IsEditMode = false;

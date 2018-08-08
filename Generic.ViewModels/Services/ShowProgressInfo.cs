@@ -39,6 +39,16 @@ namespace GenericViewModels.Services
             new StartEndInvoker(() => SetInProgress(name), () => SetInProgress(name, false));
 
 
-        public bool InProgress(string name) => _progressCountersDict[name] > 0;
+        public bool InProgress(string name)
+        {
+            if (_progressCountersDict.Keys.Contains(name))
+            {
+                return _progressCountersDict[name] > 0;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }
