@@ -3,6 +3,8 @@ using BooksLib.Models;
 using BooksLib.Services;
 using GenericViewModels.Services;
 using GenericViewModels.ViewModels;
+using Microsoft.Extensions.Logging;
+using Prism.Events;
 using System;
 using System.Threading.Tasks;
 
@@ -12,17 +14,24 @@ namespace BooksLib.ViewModels
     {
         private readonly IItemsService<Book> _booksService;
         private readonly INavigationService _navigationService;
+        private readonly IEventAggregator _eventAggregator;
 
-        public BooksViewModel(IItemsService<Book> booksService, ISelectedItemService<Book> selectedBookService, INavigationService navigationService)
-            : base(booksService, selectedBookService)
+        public BooksViewModel(IItemsService<Book> booksService, 
+            INavigationService navigationService,
+            IShowProgressInfo showProgressInfo,
+            ILoggerFactory loggerFactory,
+            IEventAggregator eventAggregator)
+            : base(booksService, showProgressInfo, loggerFactory)
         {
             _booksService = booksService ?? throw new ArgumentNullException(nameof(booksService));
             _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+            _eventAggregator = eventAggregator;
 
-            EventAggregator<NavigationInfoEvent>.Instance.Event += (sender, e) =>
-            {
-                _navigationService.UseNavigation = e.UseNavigation;
-            };
+            //// TODO: use event aggregator
+            //EventAggregator<NavigationInfoEvent>.Instance.Event += (sender, e) =>
+            //{
+            //    _navigationService.UseNavigation = e.UseNavigation;
+            //};
 
             PropertyChanged += async (sender, e) =>
             {
@@ -41,6 +50,6 @@ namespace BooksLib.ViewModels
             return base.OnRefreshCoreAsync();
         }
 
-        protected override BookItemViewModel ToViewModel(Book item) => new BookItemViewModel(item, _booksService);
+        protected override BookItemViewModel ToViewModel(Book item) => new BookItemViewModel(item, _booksService, _showProgressInfo);
     }
 }

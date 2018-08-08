@@ -1,7 +1,7 @@
 using GenericViewModels.Core;
+using GenericViewModels.Services;
 using Prism.Mvvm;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace GenericViewModels.ViewModels
@@ -12,6 +12,23 @@ namespace GenericViewModels.ViewModels
     public abstract class ViewModelBase : BindableBase
     {
         protected readonly AsyncEventSlim _initialized = new AsyncEventSlim();
+        protected readonly IShowProgressInfo _showProgressInfo;
+
+        public ViewModelBase(IShowProgressInfo showProgressInfo)
+        {
+            _showProgressInfo = showProgressInfo ?? throw new ArgumentNullException(nameof(showProgressInfo));
+
+            _showProgressInfo.ProgressInformationChanged += (sender, name) =>
+            {
+                if (name == ProgressInfoName)
+                {
+                    RaisePropertyChanged(nameof(InProgress));
+                }
+            };
+        }
+
+        public string ProgressInfoName { get; set; } = "Default";
+
 
         /// <summary>
         /// Override for special initialization.
@@ -22,45 +39,14 @@ namespace GenericViewModels.ViewModels
 
         public async Task InitAsync()
         {
-            using (StartInProgress())
+            using (_showProgressInfo.StartInProgress(ProgressInfoName))
             {
                 await InitCoreAsync();
                 _initialized.Signal();
             }
         }
 
-        #region Progress Information
-        private class StateSetter : IDisposable
-        {
-            private Action _end;
-            public StateSetter(Action start, Action end)
-            {
-                start?.Invoke();
-                _end = end;
-            }
-            public void Dispose() => _end?.Invoke();
-        }
-
-        private int _inProgressCounter = 0;
-        protected void SetInProgress(bool set = true)
-        {
-            if (set)
-            {
-                Interlocked.Increment(ref _inProgressCounter);
-                RaisePropertyChanged(nameof(InProgress));
-            }
-            else
-            {
-                Interlocked.Decrement(ref _inProgressCounter);
-                RaisePropertyChanged(nameof(InProgress));
-            }
-        }
-
-        public IDisposable StartInProgress() => 
-            new StateSetter(() => SetInProgress(), () => SetInProgress(false));
-
-        public bool InProgress => _inProgressCounter != 0;
-        #endregion
+        public bool InProgress => _showProgressInfo.InProgress(ProgressInfoName);
 
         #region Error Information
         private bool _hasError;

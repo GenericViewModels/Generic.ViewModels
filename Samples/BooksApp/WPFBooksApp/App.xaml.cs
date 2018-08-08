@@ -22,28 +22,8 @@ namespace WPFBooksApp
     {
         protected override void OnStartup(StartupEventArgs e)
         {
-            RegisterServices();
             base.OnStartup(e);
         }
-        private void RegisterServices()
-        {
-            var services = new ServiceCollection();
-            services.AddSingleton<IBooksRepository, BooksSampleRepository>();
-            services.AddSingleton<IItemsService<Book>, BooksService>();
-            services.AddSingleton<ISelectedItemService<Book>, SelectedItemService<Book>>();
-            services.AddTransient<BooksViewModel>();
-            services.AddTransient<BookDetailViewModel>();
-            services.AddSingleton<IMessageService, WPFMessageService>();
-            services.AddSingleton<INavigationService, WPFNavigationService>();
-            services.AddLogging(builder =>
-            {
-#if DEBUG
-                builder.AddDebug();
-#endif
-            });
-            AppServices = services.BuildServiceProvider();
-        }
-
-        public IServiceProvider AppServices { get; private set; }
+  
     }
 }

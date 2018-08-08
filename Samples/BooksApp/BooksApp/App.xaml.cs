@@ -48,8 +48,6 @@ namespace BooksApp
         /// <param name="e">Details about the launch request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
-            RegisterServices();
-
             Frame rootFrame = Window.Current.Content as Frame;
 
             // Do not repeat app initialization when the Window already has content,
@@ -107,28 +105,5 @@ namespace BooksApp
             //TODO: Save application state and stop any background activity
             deferral.Complete();
         }
-
-        private void RegisterServices()
-        {
-            var services = new ServiceCollection();
-            services.AddSingleton<IBooksRepository, BooksSampleRepository>();
-            services.AddSingleton<IItemsService<Book>, BooksService>();
-            services.AddSingleton<ISelectedItemService<Book>, SelectedItemService<Book>>();
-            services.AddTransient<BooksViewModel>();
-            services.AddTransient<BookDetailViewModel>();
-            services.AddTransient<MainPageViewModel>();
-            services.AddSingleton<IMessageService, UWPMessageService>();
-            services.AddSingleton<INavigationService, UWPNavigationService>();
-            services.AddSingleton<UWPInitializeNavigationService>();
-            services.AddLogging(builder =>
-            {
-#if DEBUG
-                builder.AddDebug();
-#endif
-            });
-            AppServices = services.BuildServiceProvider();
-        }
-
-        public IServiceProvider AppServices { get; private set; }
     }
 }

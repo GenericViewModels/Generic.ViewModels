@@ -27,6 +27,8 @@ namespace Generic.ViewModels.Tests.ViewModels
             }
             public ObservableCollection<AnItem> Items { get; }
 
+            public event EventHandler<EventArgs> ItemsRefreshed;
+
             public Task<AnItem> AddOrUpdateAsync(AnItem item) => throw new NotImplementedException();
             public Task DeleteAsync(AnItem item) => throw new NotImplementedException();
             public Task RefreshAsync() => Task.CompletedTask;
