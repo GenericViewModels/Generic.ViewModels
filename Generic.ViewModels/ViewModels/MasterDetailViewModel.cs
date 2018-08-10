@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -31,7 +30,7 @@ namespace GenericViewModels.ViewModels
 
             _itemsService.Items.CollectionChanged += (sender, e) =>
             {
-                RaisePropertyChanged(nameof(ItemsViewModels));
+                RaisePropertyChanged(nameof(Items));
             };
 
             RefreshCommand = new DelegateCommand(OnRefresh);
@@ -47,7 +46,6 @@ namespace GenericViewModels.ViewModels
         {
             _logger.LogTrace($"SelectedItem change event received fom items service with {e.Item}");
             RaisePropertyChanged(nameof(SelectedItem));
-            RaisePropertyChanged(nameof(SelectedItemViewModel));
         }
 
         protected override Task InitCoreAsync() => RefreshAsync();
@@ -55,32 +53,18 @@ namespace GenericViewModels.ViewModels
         public DelegateCommand RefreshCommand { get; }
         public DelegateCommand AddCommand { get; }
 
-        public ObservableCollection<TItem> Items => _itemsService.Items;
 
         protected abstract TItemViewModel ToViewModel(TItem item);
 
-        public virtual IEnumerable<TItemViewModel> ItemsViewModels => Items.Select(item => ToViewModel(item));
+        public virtual IEnumerable<TItemViewModel> Items => _itemsService.Items.Select(item => ToViewModel(item));
 
-        public virtual TItem SelectedItem
-        {
-            get => _itemsService.SelectedItem;
-            set
-            {
-                _logger.LogTrace($"{nameof(SelectedItem)} updating to {value}");
-                _itemsService.SelectedItem = value;
-            }
-        }
-
-        public virtual TItemViewModel SelectedItemViewModel
+        public virtual TItemViewModel SelectedItem
         {
             get => ToViewModel(_itemsService.SelectedItem);
             set
             {
-                if (value != null && !EqualityComparer<TItem>.Default.Equals(SelectedItem, value.Item))
-                {
-                    _logger.LogTrace($"SelectedItemViewModel updating to item {value?.Item}");
-                    SelectedItem = value.Item;
-                }
+                _logger.LogTrace($"SelectedItem updating to item {value?.Item}");
+                _itemsService.SelectedItem = value?.Item;
             }
         }
 

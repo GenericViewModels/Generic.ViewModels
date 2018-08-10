@@ -31,8 +31,8 @@
             <AppBarButton Icon="Refresh" Command="{x:Bind ViewModel.RefreshCommand}" Label="Get Books" IsCompact="True"  />
             <AppBarButton Icon="Add" Command="{x:Bind ViewModel.AddCommand}" Label="Add Book" IsCompact="True" />
         </StackPanel>
-        <ListView ItemTemplate="{StaticResource BookItemTemplate}" Grid.Row="2" ItemsSource="{x:Bind ViewModel.ItemsViewModels, Mode=OneWay}" 
-                 SelectedItem="{x:Bind ViewModel.SelectedItemViewModel, Mode=TwoWay}" >
+        <ListView ItemTemplate="{StaticResource BookItemTemplate}" Grid.Row="2" ItemsSource="{x:Bind ViewModel.Items, Mode=OneWay}" 
+                 SelectedItem="{x:Bind ViewModel.SelectedItem, Mode=TwoWay}" >
         </ListView>
         <views:BookDetailUserControl x:Name="BookDetailUC" Visibility="Collapsed" Grid.Column="1" Grid.Row="1" Grid.RowSpan="2" />
 

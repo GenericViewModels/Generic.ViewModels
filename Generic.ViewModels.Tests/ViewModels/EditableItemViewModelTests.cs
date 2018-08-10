@@ -1,5 +1,6 @@
 ﻿using GenericViewModels.Services;
 using GenericViewModels.ViewModels;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System;
 using System.Collections.ObjectModel;
@@ -16,8 +17,8 @@ namespace Generic.ViewModels.Tests.ViewModels
         }
         public class TestEditableItemViewModel : EditableItemViewModel<AnItem>
         {
-            public TestEditableItemViewModel(IItemsService<AnItem> itemsService, ISelectedItemService<AnItem> selecteItemService)
-                : base(itemsService, selecteItemService)
+            public TestEditableItemViewModel(IItemsService<AnItem> itemsService, IShowProgressInfo showProgressInfo, ILoggerFactory loggerFactory)
+                : base(itemsService, showProgressInfo, loggerFactory)
             {
             }
 

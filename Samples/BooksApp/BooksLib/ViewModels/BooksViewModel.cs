@@ -44,8 +44,8 @@ namespace BooksLib.ViewModels
         protected override Task OnAddCoreAsync()
         {
             var newBook = new Book();
-            Items.Add(newBook);
-            SelectedItem = newBook;
+            _itemsService.Items.Add(newBook);
+            _itemsService.SelectedItem = newBook;
             return base.OnRefreshCoreAsync();
         }
 
