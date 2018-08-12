@@ -1,3 +1,4 @@
+using Generic.ViewModels.Services;
 using GenericViewModels.Services;
 using Microsoft.Extensions.Logging;
 using Prism.Commands;
@@ -14,14 +15,17 @@ namespace GenericViewModels.ViewModels
     {
         protected readonly IItemsService<TItem> _itemsService;
         private readonly ILogger<MasterDetailViewModel<TItemViewModel, TItem>> _logger;
+        private readonly IItemToViewModelMap<TItem, TItemViewModel> _viewModelMap;
 
         public MasterDetailViewModel(
             IItemsService<TItem> itemsService,
+            IItemToViewModelMap<TItem, TItemViewModel> viewModelMap,
             IShowProgressInfo showProgressInfo,
             ILoggerFactory loggerFactory)
             : base(showProgressInfo)
         {
             _itemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
+            _viewModelMap = viewModelMap ?? throw new ArgumentNullException(nameof(viewModelMap));
             _logger = loggerFactory?.CreateLogger<MasterDetailViewModel<TItemViewModel, TItem>>() ?? throw new ArgumentNullException(nameof(loggerFactory));
 
             _logger.LogTrace("ctor MasterDetailViewModel");
@@ -54,7 +58,7 @@ namespace GenericViewModels.ViewModels
         public DelegateCommand AddCommand { get; }
 
 
-        protected abstract TItemViewModel ToViewModel(TItem item);
+        protected virtual TItemViewModel ToViewModel(TItem item) => _viewModelMap.GetViewModel(item);
 
         public virtual IEnumerable<TItemViewModel> Items => _itemsService.Items.Select(item => ToViewModel(item));
 
