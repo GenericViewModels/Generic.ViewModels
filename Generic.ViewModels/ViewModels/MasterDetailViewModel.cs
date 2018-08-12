@@ -14,7 +14,7 @@ namespace GenericViewModels.ViewModels
         where TItem : class
     {
         protected readonly IItemsService<TItem> _itemsService;
-        private readonly ILogger<MasterDetailViewModel<TItemViewModel, TItem>> _logger;
+        protected readonly ILogger _logger;
         private readonly IItemToViewModelMap<TItem, TItemViewModel> _viewModelMap;
 
         public MasterDetailViewModel(
@@ -26,7 +26,7 @@ namespace GenericViewModels.ViewModels
         {
             _itemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
             _viewModelMap = viewModelMap ?? throw new ArgumentNullException(nameof(viewModelMap));
-            _logger = loggerFactory?.CreateLogger<MasterDetailViewModel<TItemViewModel, TItem>>() ?? throw new ArgumentNullException(nameof(loggerFactory));
+            _logger = loggerFactory?.CreateLogger(GetType()) ?? throw new ArgumentNullException(nameof(loggerFactory));
 
             _logger.LogTrace("ctor MasterDetailViewModel");
 

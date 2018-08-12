@@ -11,8 +11,8 @@ namespace GenericViewModels.ViewModels
     public abstract class EditableItemViewModel<TItem> : ItemViewModel<TItem>, IEditableObject, IDisposable
         where TItem : class
     {
-        private readonly IItemsService<TItem> _itemsService;
-        private readonly ILogger<EditableItemViewModel<TItem>> _logger;
+        protected readonly IItemsService<TItem> _itemsService;
+        protected readonly ILogger _logger;
 
         public EditableItemViewModel(
             IItemsService<TItem> itemsService,
@@ -21,7 +21,7 @@ namespace GenericViewModels.ViewModels
             : base(showProgressInfo)
         {
             _itemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
-            _logger = loggerFactory?.CreateLogger<EditableItemViewModel<TItem>>() ?? throw new ArgumentNullException(nameof(loggerFactory));
+            _logger = loggerFactory?.CreateLogger(GetType()) ?? throw new ArgumentNullException(nameof(loggerFactory));
 
             _logger.LogTrace("ctor EditableItemViewModel");
 
