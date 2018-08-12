@@ -93,7 +93,7 @@ namespace GenericViewModels.Services
         /// </summary>
         /// <param name="item">The item to delete</param>
         /// <returns>A <see cref="Task"/></returns>
-        public virtual Task DeleteAsync(T item) => Task.FromResult<T>(default);
+        public virtual Task DeleteAsync(T item) => Task.CompletedTask;
 
         /// <summary>
         /// Override to implement refreshing asyncs. Invoke this method to fire the ItemsRefreshed event.
@@ -103,7 +103,7 @@ namespace GenericViewModels.Services
         {
             _logger.LogTrace("RefreshAsync - firing ItemsRefreshed event");
             RaiseItemsRefreshed();
-            return Task.FromResult<T>(default);
+            return Task.CompletedTask;
         }
     }
 }
