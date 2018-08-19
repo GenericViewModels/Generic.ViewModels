@@ -16,6 +16,7 @@ namespace GenericViewModels.Services
         public virtual ObservableCollection<T> Items => _items;
 
         public event EventHandler<EventArgs> ItemsRefreshed;
+        public event EventHandler<SelectedItemEventArgs<T>> SelectedItemChanged;
 
         public void RaiseItemsRefreshed() => ItemsRefreshed?.Invoke(this, new EventArgs());
 
@@ -30,14 +31,34 @@ namespace GenericViewModels.Services
                     return _selectedItem;
                 }
             }
+        }
 
-            set
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns>true if the selection was changed, false if it cannot be changed because of the edit mode, and null if no change is needed</returns>
+        public virtual bool? SetSelectedItem(T item)
+        {
+            lock (_lockSelection)
             {
-                lock (_lockSelection)
+                if (SetProperty(ref _selectedItem, item, nameof(SelectedItem)))
                 {
-                    SetProperty(ref _selectedItem, value);
+                    SelectedItemChanged?.Invoke(this, new SelectedItemEventArgs<T>(_selectedItem));
+                    return true;
+                }
+                else
+                {
+                    return null;
                 }
             }
+        }
+
+        private bool _isEditMode;
+        public bool IsEditMode
+        {
+            get => _isEditMode;
+            set => SetProperty(ref _isEditMode, value);
         }
     }
 }

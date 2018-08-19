@@ -9,8 +9,13 @@ namespace GenericViewModels.Services
         ObservableCollection<T> Items { get; }
 
         event EventHandler<EventArgs> ItemsRefreshed;
+        event EventHandler<SelectedItemEventArgs<T>> SelectedItemChanged;
+
         void RaiseItemsRefreshed();
 
-        T SelectedItem { get; set; }
+        T SelectedItem { get;  }
+        bool? SetSelectedItem(T item);
+        
+        bool IsEditMode { get; set; }
     }
 }

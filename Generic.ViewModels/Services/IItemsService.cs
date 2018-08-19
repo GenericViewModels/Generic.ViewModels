@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace GenericViewModels.Services
@@ -14,7 +15,7 @@ namespace GenericViewModels.Services
         public T Item { get; }
     }
 
-    public interface IItemsService<T>
+    public interface IItemsService<T> : INotifyPropertyChanged
     {
         event EventHandler<EventArgs> ItemsRefreshed;
         event EventHandler<SelectedItemEventArgs<T>> SelectedItemChanged;
@@ -27,6 +28,8 @@ namespace GenericViewModels.Services
 
         ObservableCollection<T> Items { get; }
 
-        T SelectedItem { get; set; }
+        T SelectedItem { get; }
+        bool? SetSelectedItem(T item);
+        bool IsEditMode { get; set; }
     }
 }

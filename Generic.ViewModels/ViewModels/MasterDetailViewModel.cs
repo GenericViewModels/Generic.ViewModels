@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -37,6 +38,8 @@ namespace GenericViewModels.ViewModels
                 RaisePropertyChanged(nameof(Items));
             };
 
+            _itemsService.PropertyChanged += ItemsService_PropertyChanged;
+
             RefreshCommand = new DelegateCommand(OnRefresh);
             AddCommand = new DelegateCommand(OnAdd);
         }
@@ -44,7 +47,19 @@ namespace GenericViewModels.ViewModels
         public virtual void Dispose()
         {
             _itemsService.SelectedItemChanged -= ItemsService_SelectedItemChanged;
+            _itemsService.PropertyChanged -= ItemsService_PropertyChanged;
         }
+
+        private void ItemsService_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "IsEditMode")
+            {
+                // fire property change on IsReadMode which is used to hide the list in the UI
+                RaisePropertyChanged(nameof(IsReadMode));
+            }
+        }
+
+        public bool IsReadMode => !_itemsService.IsEditMode;
 
         private void ItemsService_SelectedItemChanged(object sender, SelectedItemEventArgs<TItem> e)
         {
@@ -68,7 +83,7 @@ namespace GenericViewModels.ViewModels
             set
             {
                 _logger.LogTrace($"SelectedItem updating to item {value?.Item}");
-                _itemsService.SelectedItem = value?.Item;
+                _itemsService.SetSelectedItem(value?.Item);
             }
         }
 
@@ -87,7 +102,6 @@ namespace GenericViewModels.ViewModels
             {
                 await OnRefreshCoreAsync();
                 _logger.LogTrace($"{nameof(RefreshAsync)}");
-
             }
         }
 

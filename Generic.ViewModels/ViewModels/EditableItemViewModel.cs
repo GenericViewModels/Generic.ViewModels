@@ -25,7 +25,7 @@ namespace GenericViewModels.ViewModels
 
             _logger.LogTrace("ctor EditableItemViewModel");
 
-            _itemsService.SelectedItemChanged += ItemsService_SelectedItemChanged;
+            _itemsService.SelectedItemChanged += OnSelectedItemChanged;
 
             PropertyChanged += (sender, e) =>
             {
@@ -45,10 +45,10 @@ namespace GenericViewModels.ViewModels
 
         public virtual void Dispose()
         {
-            _itemsService.SelectedItemChanged -= ItemsService_SelectedItemChanged;
+            _itemsService.SelectedItemChanged -= OnSelectedItemChanged;
         }
 
-        private void ItemsService_SelectedItemChanged(object sender, SelectedItemEventArgs<TItem> e)
+        protected virtual void OnSelectedItemChanged(object sender, SelectedItemEventArgs<TItem> e)
         {
             _logger.LogTrace($"SelectedItemChanged event from items service received, setting Item to {e.Item}");
             Item = e.Item;
@@ -89,15 +89,19 @@ namespace GenericViewModels.ViewModels
         }
 
         /// <summary>
-        /// Sets the SelectedItem in SharedItems.SelectedItems
+        /// Sets the SelectedItem in SharedItems.SelectedItems which raises the event SelecteItemsChanged
         /// </summary>
-        protected virtual void SetSelectedItem(TItem item)
+        protected virtual bool? SetSelectedItem(TItem item)
         {
             _logger.LogTrace($"SetSelectedItem - set selected and Item property to {item}");
 
-            if (item == null) return;
-            _itemsService.SelectedItem = item;
-            Item = item;
+            if (item == null) return null;
+            bool? result = _itemsService.SetSelectedItem(item);
+            if (result == true)
+            {
+                Item = item;
+            }
+            return result;
         }
 
         #region Edit / Read Mode
@@ -117,7 +121,10 @@ namespace GenericViewModels.ViewModels
             {
                 if (SetProperty(ref _isEditMode, value))
                 {
+                    _itemsService.IsEditMode = _isEditMode;
+
                     RaisePropertyChanged(nameof(IsReadMode));
+
                     CancelCommand.RaiseCanExecuteChanged();
                     SaveCommand.RaiseCanExecuteChanged();
                     EditCommand.RaiseCanExecuteChanged();

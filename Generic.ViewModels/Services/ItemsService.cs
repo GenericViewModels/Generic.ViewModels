@@ -14,12 +14,15 @@ namespace GenericViewModels.Services
         private readonly ISharedItems<T> _sharedItems;
         private readonly ILogger _logger;
 
-        public event EventHandler<SelectedItemEventArgs<T>> SelectedItemChanged;
-
         public event EventHandler<EventArgs> ItemsRefreshed
         {
             add => _sharedItems.ItemsRefreshed += value;
             remove => _sharedItems.ItemsRefreshed -= value;
+        }
+        public event EventHandler<SelectedItemEventArgs<T>> SelectedItemChanged
+        {
+            add => _sharedItems.SelectedItemChanged += value;
+            remove => _sharedItems.SelectedItemChanged -= value;
         }
 
         protected void RaiseItemsRefreshed() => _sharedItems.RaiseItemsRefreshed();
@@ -39,12 +42,13 @@ namespace GenericViewModels.Services
 
         private void SharedItems_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == "SelectedItem")
+            if (e.PropertyName == "SelectedItem" || e.PropertyName == "IsEditMode")
             {
-                _logger.LogTrace($"PropertyChanged event from shared items with SelectedItem received {SelectedItem}, firing SelectedItemChanged event");
+                _logger.LogTrace($"PropertyChanged event from shared items received - property {e.PropertyName} - firing event");
 
-                SelectedItemChanged?.Invoke(this, new SelectedItemEventArgs<T>(SelectedItem));
+                RaisePropertyChanged(e.PropertyName);
             }
+
         }
 
         /// <summary>
@@ -78,7 +82,12 @@ namespace GenericViewModels.Services
         public virtual T SelectedItem
         {
             get => _sharedItems.SelectedItem;
-            set => _sharedItems.SelectedItem = value;
+        }
+
+        public virtual bool IsEditMode
+        {
+            get => _sharedItems.IsEditMode;
+            set => _sharedItems.IsEditMode = value;
         }
 
         /// <summary>
@@ -105,5 +114,7 @@ namespace GenericViewModels.Services
             RaiseItemsRefreshed();
             return Task.CompletedTask;
         }
+
+        public bool? SetSelectedItem(T item) => _sharedItems.SetSelectedItem(item);
     }
 }
