@@ -1,6 +1,5 @@
 ﻿using GenericViewModels.Core;
 using Microsoft.Extensions.Logging;
-using Prism.Mvvm;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;

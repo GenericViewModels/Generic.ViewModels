@@ -1,6 +1,5 @@
 using GenericViewModels.Core;
 using GenericViewModels.Services;
-using Prism.Mvvm;
 using System;
 using System.Threading.Tasks;
 
@@ -56,8 +55,8 @@ namespace GenericViewModels.ViewModels
             set => SetProperty(ref _hasError, value);
         }
 
-        private string _errorMessage;
-        public string ErrorMessage
+        private string? _errorMessage;
+        public string? ErrorMessage
         {
             get => _errorMessage;
             set => SetProperty(ref _errorMessage, value);

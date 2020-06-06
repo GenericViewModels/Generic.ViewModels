@@ -7,10 +7,7 @@ namespace GenericViewModels.Services
 {
     public class SelectedItemEventArgs<T> : EventArgs
     {
-        public SelectedItemEventArgs(T item)
-        {
-            Item = item;
-        }
+        public SelectedItemEventArgs(T item) => Item = item;
 
         public T Item { get; }
     }

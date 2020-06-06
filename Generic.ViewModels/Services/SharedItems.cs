@@ -1,4 +1,4 @@
-﻿using Prism.Mvvm;
+﻿using GenericViewModels.Core;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -6,6 +6,7 @@ using System.Diagnostics;
 namespace GenericViewModels.Services
 {
     public class SharedItems<T> : BindableBase, ISharedItems<T>
+        where T : class
     {
         public SharedItems()
         {
@@ -15,14 +16,14 @@ namespace GenericViewModels.Services
         private readonly ObservableCollection<T> _items = new ObservableCollection<T>();
         public virtual ObservableCollection<T> Items => _items;
 
-        public event EventHandler<EventArgs> ItemsRefreshed;
-        public event EventHandler<SelectedItemEventArgs<T>> SelectedItemChanged;
+        public event EventHandler<EventArgs>? ItemsRefreshed;
+        public event EventHandler<SelectedItemEventArgs<T>>? SelectedItemChanged;
 
         public void RaiseItemsRefreshed() => ItemsRefreshed?.Invoke(this, new EventArgs());
 
-        private T _selectedItem;
-        private object _lockSelection = new object();
-        public virtual T SelectedItem
+        private T? _selectedItem;
+        private readonly object _lockSelection = new object();
+        public virtual T? SelectedItem
         {
             get
             {

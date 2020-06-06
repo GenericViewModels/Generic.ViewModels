@@ -18,11 +18,9 @@ namespace GenericViewModels.Net
             HttpResponseMessage response = await httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
             Stream stream = await response.Content.ReadAsStreamAsync();
-            using (var reader = new StreamReader(stream))
-            using (var jsonReader = new JsonTextReader(reader))
-            {
-                return new JsonSerializer().Deserialize<IEnumerable<T>>(jsonReader);
-            }
+            using var reader = new StreamReader(stream);
+            using var jsonReader = new JsonTextReader(reader);
+            return new JsonSerializer().Deserialize<IEnumerable<T>>(jsonReader);
         }
 
         public static async Task<T> GetItemAsync<T>(this HttpClient httpClient, string url)
@@ -33,11 +31,9 @@ namespace GenericViewModels.Net
             HttpResponseMessage response = await httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
             Stream stream = await response.Content.ReadAsStreamAsync();
-            using (var reader = new StreamReader(stream))
-            using (var jsonReader = new JsonTextReader(reader))
-            {
-                return new JsonSerializer().Deserialize<T>(jsonReader);
-            }
+            using var reader = new StreamReader(stream);
+            using var jsonReader = new JsonTextReader(reader);
+            return new JsonSerializer().Deserialize<T>(jsonReader);
         }
 
         public static async Task<T> AddItemAsync<T>(this HttpClient httpClient, string url, T item)
@@ -51,11 +47,9 @@ namespace GenericViewModels.Net
             HttpResponseMessage response = await httpClient.PostAsync(url, content);
             response.EnsureSuccessStatusCode();
             Stream stream = await response.Content.ReadAsStreamAsync();
-            using (var reader = new StreamReader(stream))
-            using (var jsonReader = new JsonTextReader(reader))
-            {
-                return new JsonSerializer().Deserialize<T>(jsonReader);
-            }
+            using var reader = new StreamReader(stream);
+            using var jsonReader = new JsonTextReader(reader);
+            return new JsonSerializer().Deserialize<T>(jsonReader);
         }
 
         public static async Task UpdateItemAsync<T>(this HttpClient httpClient, string url, T item)
@@ -78,11 +72,9 @@ namespace GenericViewModels.Net
             HttpResponseMessage response = await httpClient.DeleteAsync(url);
             response.EnsureSuccessStatusCode();
             Stream stream = await response.Content.ReadAsStreamAsync();
-            using (var reader = new StreamReader(stream))
-            using (var jsonReader = new JsonTextReader(reader))
-            {
-                return new JsonSerializer().Deserialize<T>(jsonReader);
-            }
+            using var reader = new StreamReader(stream);
+            using var jsonReader = new JsonTextReader(reader);
+            return new JsonSerializer().Deserialize<T>(jsonReader);
         }
     }
 }

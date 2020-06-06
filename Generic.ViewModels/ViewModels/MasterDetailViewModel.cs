@@ -1,7 +1,7 @@
 using Generic.ViewModels.Services;
+using GenericViewModels.Core;
 using GenericViewModels.Services;
 using Microsoft.Extensions.Logging;
-using Prism.Commands;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace GenericViewModels.ViewModels
 {
     public abstract class MasterDetailViewModel<TItemViewModel, TItem> : ViewModelBase, IDisposable
-        where TItemViewModel : IItemViewModel<TItem>
+        where TItemViewModel : class, IItemViewModel<TItem>
         where TItem : class
     {
         protected readonly IItemsService<TItem> _itemsService;
@@ -73,11 +73,11 @@ namespace GenericViewModels.ViewModels
         public DelegateCommand AddCommand { get; }
 
 
-        protected virtual TItemViewModel ToViewModel(TItem item) => _viewModelMap.GetViewModel(item);
+        protected virtual TItemViewModel? ToViewModel(TItem item) => _viewModelMap.GetViewModel(item);
 
         public virtual IEnumerable<TItemViewModel> Items => _itemsService.Items.Select(item => ToViewModel(item));
 
-        public virtual TItemViewModel SelectedItem
+        public virtual TItemViewModel? SelectedItem
         {
             get => ToViewModel(_itemsService.SelectedItem);
             set

@@ -1,5 +1,4 @@
-﻿using Prism.Mvvm;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -17,9 +16,9 @@ namespace GenericViewModels.Core
             set => SetProperty(ref _hasErrors, value);
         }
 
-        public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
+        public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
 
-        public IEnumerable GetErrors(string propertyName)
+        public IEnumerable? GetErrors(string propertyName)
         {
             if (_errors.TryGetValue(propertyName, out List<string> errorsList))
             {
@@ -34,9 +33,9 @@ namespace GenericViewModels.Core
 
         #region Set and Clear Errors
 
-        private Dictionary<string, List<string>> _errors = new Dictionary<string, List<string>>();
+        private readonly Dictionary<string, List<string>> _errors = new Dictionary<string, List<string>>();
 
-        public virtual void SetError(string errorMessage, [CallerMemberName] string propertyName = null)
+        public virtual void SetError(string errorMessage, [CallerMemberName] string propertyName = default!)
         {
             if (_errors.TryGetValue(propertyName, out List<string> errorList))
             {
@@ -50,7 +49,7 @@ namespace GenericViewModels.Core
             HasErrors = true;
         }
 
-        public void ClearErrors([CallerMemberName] string propertyName = null)
+        public void ClearErrors([CallerMemberName] string propertyName = default!)
         {
             if (HasErrors)
             {
@@ -76,6 +75,5 @@ namespace GenericViewModels.Core
             }
         }
         #endregion
-
     }
 }

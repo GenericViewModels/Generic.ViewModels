@@ -1,6 +1,6 @@
-﻿using GenericViewModels.Services;
+﻿using GenericViewModels.Core;
+using GenericViewModels.Services;
 using Microsoft.Extensions.Logging;
-using Prism.Commands;
 using System;
 using System.ComponentModel;
 using System.Linq;
@@ -135,7 +135,7 @@ namespace GenericViewModels.ViewModels
         #endregion
 
         #region Copy Item for Edit Mode
-        private TItem _editItem;
+        private TItem? _editItem;
 
         /// <summary>
         /// EditItem returns the Item in read mode
@@ -207,6 +207,12 @@ namespace GenericViewModels.ViewModels
             }
         }
 
+        private void ResetEditItem()
+        {
+            _editItem = default;
+            RaisePropertyChanged(nameof(EditItem));
+        }
+
         /// <summary>
         /// set back to read mode
         /// intializes the EditItem property to return the Item property
@@ -217,7 +223,7 @@ namespace GenericViewModels.ViewModels
             _logger.LogTrace($"{nameof(CancelEdit)} with {EditItem}");
 
             IsEditMode = false;
-            EditItem = default;
+            ResetEditItem();
 
             await OnEndEditAsync();
         }
@@ -249,7 +255,7 @@ namespace GenericViewModels.ViewModels
                 {
                     _itemsService.Items.Add(Item);
                 }
-                EditItem = default;
+                ResetEditItem();
                 IsEditMode = false;
 
                 SetSelectedItem(Item);

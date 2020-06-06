@@ -14,7 +14,7 @@ namespace GenericViewModels.Services
         // contains all the unfiltered items from the service
         protected readonly List<T> _allItems = new List<T>();
 
-        public Func<T, bool> Filter { get; set; }
+        public Func<T, bool>? Filter { get; set; }
 
         public void ExecuteFilter()
         {
