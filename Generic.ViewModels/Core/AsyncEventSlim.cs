@@ -9,7 +9,7 @@ namespace GenericViewModels.Core
     /// </summary>
     public class AsyncEventSlim
     {
-        private ManualResetEventSlim _event = new ManualResetEventSlim(false);
+        private readonly ManualResetEventSlim _event = new ManualResetEventSlim(false);
 
         /// <summary>
         /// Sets the event

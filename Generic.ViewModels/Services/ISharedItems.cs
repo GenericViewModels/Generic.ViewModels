@@ -5,6 +5,7 @@ using System.ComponentModel;
 namespace GenericViewModels.Services
 {
     public interface ISharedItems<T> : INotifyPropertyChanged
+        where T : class
     {
         ObservableCollection<T> Items { get; }
 
@@ -13,7 +14,7 @@ namespace GenericViewModels.Services
 
         void RaiseItemsRefreshed();
 
-        T SelectedItem { get;  }
+        T? SelectedItem { get;  }
         bool? SetSelectedItem(T item);
         
         bool IsEditMode { get; set; }

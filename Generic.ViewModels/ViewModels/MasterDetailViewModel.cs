@@ -48,6 +48,8 @@ namespace GenericViewModels.ViewModels
         {
             _itemsService.SelectedItemChanged -= ItemsService_SelectedItemChanged;
             _itemsService.PropertyChanged -= ItemsService_PropertyChanged;
+
+            GC.SuppressFinalize(this);
         }
 
         private void ItemsService_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -72,7 +74,6 @@ namespace GenericViewModels.ViewModels
         public DelegateCommand RefreshCommand { get; }
         public DelegateCommand AddCommand { get; }
 
-
         protected virtual TItemViewModel? ToViewModel(TItem item) => _viewModelMap.GetViewModel(item);
 
         public virtual IEnumerable<TItemViewModel> Items => _itemsService.Items.Select(item => ToViewModel(item));
@@ -83,7 +84,10 @@ namespace GenericViewModels.ViewModels
             set
             {
                 _logger.LogTrace($"SelectedItem updating to item {value?.Item}");
-                _itemsService.SetSelectedItem(value?.Item);
+                if (value?.Item != null)
+                {
+                    _itemsService.SetSelectedItem(value?.Item);
+                }
             }
         }
 

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 namespace GenericViewModels.Services
 {
     public class FilterableItemsService<T> : ItemsService<T>, IFilterableItemsService<T>
+        where T : class
     {
         public FilterableItemsService(ISharedItems<T> sharedItemsService, ILoggerFactory loggerFactory) 
             : base(sharedItemsService, loggerFactory)

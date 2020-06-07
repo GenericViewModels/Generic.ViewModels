@@ -4,7 +4,7 @@ namespace GenericViewModels.Services
 {
     public interface IFilterableItemsService<T> : IItemsService<T>
     {
-        Func<T, bool> Filter { get; set; }
+        Func<T, bool>? Filter { get; set; }
         void ExecuteFilter();
     }
 }

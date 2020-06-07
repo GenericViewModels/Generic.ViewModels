@@ -4,7 +4,7 @@ using System.ComponentModel;
 
 namespace GenericViewModels.Services
 {
-    [Obsolete("use SharedItem instead")]
+    [Obsolete("use SharedItem instead", error: true)]
     public class SelectedItemState<T> : ISelectedItem<T>
     {
         private T _selectedItem;

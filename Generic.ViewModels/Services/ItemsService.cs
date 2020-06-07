@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 namespace GenericViewModels.Services
 {
     public abstract class ItemsService<T> : BindableBase, IItemsService<T>, IDisposable
+        where T : class
     {
         protected AsyncEventSlim _initialized = new AsyncEventSlim();
         private readonly ISharedItems<T> _sharedItems;
@@ -78,7 +79,7 @@ namespace GenericViewModels.Services
         /// </summary>
         public virtual ObservableCollection<T> Items => _sharedItems.Items;
 
-        public virtual T SelectedItem
+        public virtual T? SelectedItem
         {
             get => _sharedItems.SelectedItem;
         }

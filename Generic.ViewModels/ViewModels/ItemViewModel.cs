@@ -7,6 +7,7 @@ namespace GenericViewModels.ViewModels
     /// </summary>
     /// <typeparam name="T">Item type for the view-model to display</typeparam>
     public abstract class ItemViewModel<T> : ViewModelBase, IItemViewModel<T>
+        where T : class
     {
         public ItemViewModel(IShowProgressInfo showProgressInfo)
             : base(showProgressInfo)
@@ -15,7 +16,7 @@ namespace GenericViewModels.ViewModels
         }
         public ItemViewModel(T item, IShowProgressInfo showProgressInfo) 
             : base(showProgressInfo)
-            => Item = item;
+            => _item = item;
 
         private T _item;
         public virtual T Item

@@ -10,7 +10,7 @@ namespace GenericViewModels.Net
 {
     public static class HttpClientExtensions
     {
-        private static JsonSerializerOptions s_options = new JsonSerializerOptions
+        private static readonly JsonSerializerOptions s_options = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         };

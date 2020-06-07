@@ -78,14 +78,12 @@ namespace GenericViewModels.ViewModels
                 return;
             }
 
-            using (_showProgressInfo.StartInProgress(ProgressInfoName))
-            {
-                await OnDeleteCoreAsync();
-                await _itemsService.RefreshAsync();
-                SetSelectedItem(_itemsService.Items.FirstOrDefault());
+            using var progress = _showProgressInfo.StartInProgress(ProgressInfoName);
+            await OnDeleteCoreAsync();
+            await _itemsService.RefreshAsync();
+            SetSelectedItem(_itemsService.Items.FirstOrDefault());
 
-                await OnEndEditAsync();
-            }
+            await OnEndEditAsync();
         }
 
         /// <summary>
@@ -238,30 +236,28 @@ namespace GenericViewModels.ViewModels
         {
             _logger.LogTrace($"{nameof(EndEdit)} with {EditItem}");
 
-            using (_showProgressInfo.StartInProgress(ProgressInfoName))
+            using var progress = _showProgressInfo.StartInProgress(ProgressInfoName);
+            await OnSaveCoreAsync();
+            int index = _itemsService.Items.IndexOf(Item);  // with a new created item, its not in the Items collection
+            if (index >= 0)
             {
-                await OnSaveCoreAsync();
-                int index = _itemsService.Items.IndexOf(Item);  // with a new created item, its not in the Items collection
-                if (index >= 0)
-                {
-                    _itemsService.Items.RemoveAt(index);
-                }
-                Item = EditItem;
-                if (index >= 0)
-                {
-                    _itemsService.Items.Insert(index, Item);
-                }
-                else
-                {
-                    _itemsService.Items.Add(Item);
-                }
-                ResetEditItem();
-                IsEditMode = false;
-
-                SetSelectedItem(Item);
-
-                await OnEndEditAsync();
+                _itemsService.Items.RemoveAt(index);
             }
+            Item = EditItem;
+            if (index >= 0)
+            {
+                _itemsService.Items.Insert(index, Item);
+            }
+            else
+            {
+                _itemsService.Items.Add(Item);
+            }
+            ResetEditItem();
+            IsEditMode = false;
+
+            SetSelectedItem(Item);
+
+            await OnEndEditAsync();
         }
         #endregion
     }

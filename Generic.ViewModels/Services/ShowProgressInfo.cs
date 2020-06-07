@@ -8,7 +8,7 @@ namespace GenericViewModels.Services
     {
         private readonly ConcurrentDictionary<string, int> _progressCountersDict = new ConcurrentDictionary<string, int>();
 
-        public event EventHandler<string> ProgressInformationChanged;
+        public event EventHandler<string>? ProgressInformationChanged;
 
         private readonly object _lockSetInProgress = new object();
 
