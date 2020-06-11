@@ -12,8 +12,8 @@ namespace GenericViewModels.ViewModels
         public ItemViewModel(IShowProgressInfo showProgressInfo)
             : base(showProgressInfo)
         {
-
         }
+
         public ItemViewModel(T item, IShowProgressInfo showProgressInfo) 
             : base(showProgressInfo)
             => _item = item;

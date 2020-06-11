@@ -1,5 +1,4 @@
 using Generic.ViewModels.Services;
-using GenericViewModels.Core;
 using GenericViewModels.Services;
 using Microsoft.Extensions.Logging;
 using System;
@@ -14,8 +13,11 @@ namespace GenericViewModels.ViewModels
         where TItemViewModel : class, IItemViewModel<TItem>
         where TItem : class
     {
-        protected readonly IItemsService<TItem> _itemsService;
-        protected readonly ILogger _logger;
+        private readonly IItemsService<TItem> _itemsService;
+        private readonly ILogger _logger;
+        protected IItemsService<TItem> ItemsService => _itemsService;
+        protected ILogger Logger => _logger;
+
         private readonly IItemToViewModelMap<TItem, TItemViewModel> _viewModelMap;
 
         public MasterDetailViewModel(
@@ -39,9 +41,6 @@ namespace GenericViewModels.ViewModels
             };
 
             _itemsService.PropertyChanged += ItemsService_PropertyChanged;
-
-            RefreshCommand = new DelegateCommand(OnRefresh);
-            AddCommand = new DelegateCommand(OnAdd);
         }
 
         public virtual void Dispose()
@@ -61,7 +60,7 @@ namespace GenericViewModels.ViewModels
             }
         }
 
-        public bool IsReadMode => !_itemsService.IsEditMode;
+        public bool IsReadMode => !ItemsService.IsEditMode;
 
         private void ItemsService_SelectedItemChanged(object sender, SelectedItemEventArgs<TItem> e)
         {
@@ -71,12 +70,9 @@ namespace GenericViewModels.ViewModels
 
         protected override Task InitCoreAsync() => RefreshAsync();
 
-        public DelegateCommand RefreshCommand { get; }
-        public DelegateCommand AddCommand { get; }
-
         protected virtual TItemViewModel? ToViewModel(TItem item) => _viewModelMap.GetViewModel(item);
 
-        public virtual IEnumerable<TItemViewModel> Items => _itemsService.Items.Select(item => ToViewModel(item));
+        public virtual IEnumerable<TItemViewModel> Items => ItemsService.Items.Select(item => ToViewModel(item));
 
         public virtual TItemViewModel? SelectedItem
         {
@@ -86,27 +82,18 @@ namespace GenericViewModels.ViewModels
                 _logger.LogTrace($"SelectedItem updating to item {value?.Item}");
                 if (value?.Item != null)
                 {
-                    _itemsService.SetSelectedItem(value?.Item);
+                    _itemsService.SetSelectedItem(value.Item);
                 }
             }
         }
 
-        /// <summary>
-        /// preparations for progress information,
-        /// invokes <see cref="RefreshAsync"/> and sets the <see cref="SelectedItem"/> property
-        /// Invoked by the <see cref="RefreshCommand"/> 
-        /// </summary>
-        protected async void OnRefresh() => await RefreshAsync();
-
-        private async Task RefreshAsync()
+        protected async Task RefreshAsync()
         {
             _logger.LogTrace($"{nameof(RefreshAsync)}");
 
-            using (_showProgressInfo.StartInProgress(ProgressInfoName))
-            {
-                await OnRefreshCoreAsync();
-                _logger.LogTrace($"{nameof(RefreshAsync)}");
-            }
+            using var progress = _showProgressInfo.StartInProgress(ProgressInfoName);
+            await OnRefreshCoreAsync();
+            _logger.LogTrace($"{nameof(RefreshAsync)}");
         }
 
         /// <summary>
@@ -119,11 +106,6 @@ namespace GenericViewModels.ViewModels
 
             await _itemsService.RefreshAsync();
         }
-
-        /// <summary>
-        /// Override <see cref="OnAddCoreAsync" to prepare adding an item/>
-        /// </summary>
-        protected async void OnAdd() => await OnAddCoreAsync();
 
         /// <summary>
         /// Override to create an implementation to add a new item

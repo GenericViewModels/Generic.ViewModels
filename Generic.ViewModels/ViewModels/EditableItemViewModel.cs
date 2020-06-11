@@ -1,5 +1,4 @@
-﻿using GenericViewModels.Core;
-using GenericViewModels.Services;
+﻿using GenericViewModels.Services;
 using Microsoft.Extensions.Logging;
 using System;
 using System.ComponentModel;
@@ -11,8 +10,8 @@ namespace GenericViewModels.ViewModels
     public abstract class EditableItemViewModel<TItem> : ItemViewModel<TItem>, IEditableObject, IDisposable
         where TItem : class
     {
-        protected readonly IItemsService<TItem> _itemsService;
-        protected readonly ILogger _logger;
+        protected IItemsService<TItem> ItemsService { get; }
+        protected ILogger Logger { get; }
 
         public EditableItemViewModel(
             IItemsService<TItem> itemsService,
@@ -20,45 +19,35 @@ namespace GenericViewModels.ViewModels
             ILoggerFactory loggerFactory)
             : base(showProgressInfo)
         {
-            _itemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
-            _logger = loggerFactory?.CreateLogger(GetType()) ?? throw new ArgumentNullException(nameof(loggerFactory));
+            ItemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
+            Logger = loggerFactory?.CreateLogger(GetType()) ?? throw new ArgumentNullException(nameof(loggerFactory));
 
-            _logger.LogTrace("ctor EditableItemViewModel");
+            Logger.LogTrace("ctor EditableItemViewModel");
 
-            _itemsService.SelectedItemChanged += OnSelectedItemChanged;
+            ItemsService.SelectedItemChanged += OnSelectedItemChanged;
 
             PropertyChanged += (sender, e) =>
             {
                 if (e.PropertyName == nameof(Item))
                 {
-                    _logger.LogTrace($"PropertyChanged event with Item received, firing change event on EditItem");
+                    Logger.LogTrace($"PropertyChanged event with Item received, firing change event on EditItem");
                     RaisePropertyChanged(nameof(EditItem));
                 }
             };
-
-            EditCommand = new DelegateCommand(BeginEdit, () => IsReadMode);
-            CancelCommand = new DelegateCommand(CancelEdit, () => IsEditMode);
-            SaveCommand = new DelegateCommand(EndEdit, () => IsEditMode);
-            AddCommand = new DelegateCommand(OnAdd, () => IsReadMode);
-            DeleteCommand = new DelegateCommand(OnDelete);
         }
 
         public virtual void Dispose()
         {
-            _itemsService.SelectedItemChanged -= OnSelectedItemChanged;
+            ItemsService.SelectedItemChanged -= OnSelectedItemChanged;
+
+            GC.SuppressFinalize(this);
         }
 
         protected virtual void OnSelectedItemChanged(object sender, SelectedItemEventArgs<TItem> e)
         {
-            _logger.LogTrace($"SelectedItemChanged event from items service received, setting Item to {e.Item}");
+            Logger.LogTrace($"SelectedItemChanged event from items service received, setting Item to {e.Item}");
             Item = e.Item;
         }
-
-        public DelegateCommand AddCommand { get; }
-        public DelegateCommand EditCommand { get; }
-        public DelegateCommand CancelCommand { get; }
-        public DelegateCommand SaveCommand { get; }
-        public DelegateCommand DeleteCommand { get; }
 
         /// <summary>
         /// Overriding this method is required to start the OnDelete method
@@ -80,8 +69,8 @@ namespace GenericViewModels.ViewModels
 
             using var progress = _showProgressInfo.StartInProgress(ProgressInfoName);
             await OnDeleteCoreAsync();
-            await _itemsService.RefreshAsync();
-            SetSelectedItem(_itemsService.Items.FirstOrDefault());
+            await ItemsService.RefreshAsync();
+            SetSelectedItem(ItemsService.Items.FirstOrDefault());
 
             await OnEndEditAsync();
         }
@@ -91,10 +80,10 @@ namespace GenericViewModels.ViewModels
         /// </summary>
         protected virtual bool? SetSelectedItem(TItem item)
         {
-            _logger.LogTrace($"SetSelectedItem - set selected and Item property to {item}");
+            Logger.LogTrace($"SetSelectedItem - set selected and Item property to {item}");
 
             if (item == null) return null;
-            bool? result = _itemsService.SetSelectedItem(item);
+            bool? result = ItemsService.SetSelectedItem(item);
             if (result == true)
             {
                 Item = item;
@@ -119,16 +108,16 @@ namespace GenericViewModels.ViewModels
             {
                 if (SetProperty(ref _isEditMode, value))
                 {
-                    _itemsService.IsEditMode = _isEditMode;
+                    ItemsService.IsEditMode = _isEditMode;
 
                     RaisePropertyChanged(nameof(IsReadMode));
 
-                    CancelCommand.RaiseCanExecuteChanged();
-                    SaveCommand.RaiseCanExecuteChanged();
-                    EditCommand.RaiseCanExecuteChanged();
+                    OnEditCommandChanges();
                 }
             }
         }
+
+        protected abstract void OnEditCommandChanges();
 
         #endregion
 
@@ -193,7 +182,7 @@ namespace GenericViewModels.ViewModels
         /// </summary>
         public virtual void BeginEdit()
         {
-            _logger.LogTrace($"{nameof(BeginEdit)}, creating a copy of {Item}");
+            Logger.LogTrace($"{nameof(BeginEdit)}, creating a copy of {Item}");
 
             if (Item == null) return;  // nothing selected
 
@@ -218,7 +207,7 @@ namespace GenericViewModels.ViewModels
         /// </summary>
         public async virtual void CancelEdit()
         {
-            _logger.LogTrace($"{nameof(CancelEdit)} with {EditItem}");
+            Logger.LogTrace($"{nameof(CancelEdit)} with {EditItem}");
 
             IsEditMode = false;
             ResetEditItem();
@@ -234,23 +223,23 @@ namespace GenericViewModels.ViewModels
         /// </summary>
         public async virtual void EndEdit()
         {
-            _logger.LogTrace($"{nameof(EndEdit)} with {EditItem}");
+            Logger.LogTrace($"{nameof(EndEdit)} with {EditItem}");
 
             using var progress = _showProgressInfo.StartInProgress(ProgressInfoName);
             await OnSaveCoreAsync();
-            int index = _itemsService.Items.IndexOf(Item);  // with a new created item, its not in the Items collection
+            int index = ItemsService.Items.IndexOf(Item);  // with a new created item, its not in the Items collection
             if (index >= 0)
             {
-                _itemsService.Items.RemoveAt(index);
+                ItemsService.Items.RemoveAt(index);
             }
             Item = EditItem;
             if (index >= 0)
             {
-                _itemsService.Items.Insert(index, Item);
+                ItemsService.Items.Insert(index, Item);
             }
             else
             {
-                _itemsService.Items.Add(Item);
+                ItemsService.Items.Add(Item);
             }
             ResetEditItem();
             IsEditMode = false;
