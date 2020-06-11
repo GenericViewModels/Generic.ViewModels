@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>GenericViewModels</RootNamespace>
-    <Version>0.2.54-alpha</Version>
+    <Version>0.2.55-alpha</Version>
     <Authors>Christian Nagel</Authors>
     <Company>CN innovation</Company>
     <Description>Generic view-model types and core MVVM features</Description>
@@ -11,7 +11,7 @@
     <PackageTags>MVVM; Generics;</PackageTags>
     <PackageReleaseNotes>Alpha version</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/GenericViewModels/Generic.ViewModels</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/GenericViewMdoels/Generic.ViewModels</RepositoryUrl>
+    <RepositoryUrl>https://github.com/GenericViewModels/Generic.ViewModels</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
