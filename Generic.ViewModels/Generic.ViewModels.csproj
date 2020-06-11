@@ -6,7 +6,8 @@
     <Version>0.2.53-alpha</Version>
     <Authors>Christian Nagel</Authors>
     <Company>CN innovation</Company>
-    <Description>Generic view-model types and core MVVM classes</Description>
+    <Description>Generic view-model types and core MVVM features</Description>
+    <RepositoryUrl>https://github.com/GenericViewModels/Generic.ViewModels</RepositoryUrl>
     <PackageTags>MVVM; Generics;</PackageTags>
     <PackageReleaseNotes>Alpha version</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/CNinnovation/Generic.ViewModels</PackageProjectUrl>
