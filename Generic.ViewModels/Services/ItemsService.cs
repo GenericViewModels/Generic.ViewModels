@@ -25,7 +25,9 @@ namespace GenericViewModels.Services
             remove => _sharedItems.SelectedItemChanged -= value;
         }
 
+#pragma warning disable CA1030 // Use events where appropriate
         protected void RaiseItemsRefreshed() => _sharedItems.RaiseItemsRefreshed();
+#pragma warning restore CA1030 // Use events where appropriate
 
         public ItemsService(ISharedItems<T> sharedItemsService, ILoggerFactory loggerFactory)
         {

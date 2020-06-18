@@ -16,7 +16,9 @@ namespace GenericViewModels.Core
 
         public event EventHandler? CanExecuteChanged;
 
+#pragma warning disable CA1030 // Use events where appropriate
         public virtual void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+#pragma warning restore CA1030 // Use events where appropriate
 
         public bool CanExecute(object parameter) => _canExecute?.Invoke() ?? true;
 
