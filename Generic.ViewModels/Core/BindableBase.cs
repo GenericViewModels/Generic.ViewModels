@@ -8,7 +8,8 @@ namespace GenericViewModels.Core
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public virtual void RaisePropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        public virtual void RaisePropertyChanged(string propertyName) => 
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
         public bool SetProperty<T>(ref T item, T value, [CallerMemberName] string propertyName = default!)
         {
