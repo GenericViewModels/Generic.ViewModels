@@ -91,7 +91,7 @@ namespace GenericViewModels.ViewModels
         {
             _logger.LogTrace($"{nameof(RefreshAsync)}");
 
-            using var progress = _showProgressInfo.StartInProgress(ProgressInfoName);
+            using var progress = ShowProgressInfo.StartInProgress(ProgressInfoName);
             await OnRefreshCoreAsync();
             _logger.LogTrace($"{nameof(RefreshAsync)}");
         }

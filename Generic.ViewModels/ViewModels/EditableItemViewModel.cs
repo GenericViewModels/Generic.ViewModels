@@ -67,7 +67,7 @@ namespace GenericViewModels.ViewModels
                 return;
             }
 
-            using var progress = _showProgressInfo.StartInProgress(ProgressInfoName);
+            using var progress = ShowProgressInfo.StartInProgress(ProgressInfoName);
             await OnDeleteCoreAsync();
             await ItemsService.RefreshAsync();
             SetSelectedItem(ItemsService.Items.FirstOrDefault());
@@ -225,7 +225,7 @@ namespace GenericViewModels.ViewModels
         {
             Logger.LogTrace($"{nameof(EndEdit)} with {EditItem}");
 
-            using var progress = _showProgressInfo.StartInProgress(ProgressInfoName);
+            using var progress = ShowProgressInfo.StartInProgress(ProgressInfoName);
             await OnSaveCoreAsync();
             int index = ItemsService.Items.IndexOf(Item);  // with a new created item, its not in the Items collection
             if (index >= 0)

@@ -11,13 +11,13 @@ namespace GenericViewModels.ViewModels
     public abstract class ViewModelBase : BindableBase
     {
         protected readonly AsyncEventSlim _initialized = new AsyncEventSlim();
-        protected readonly IShowProgressInfo _showProgressInfo;
+        protected IShowProgressInfo ShowProgressInfo { get; }
 
         public ViewModelBase(IShowProgressInfo showProgressInfo)
         {
-            _showProgressInfo = showProgressInfo ?? throw new ArgumentNullException(nameof(showProgressInfo));
+            ShowProgressInfo = showProgressInfo ?? throw new ArgumentNullException(nameof(showProgressInfo));
 
-            _showProgressInfo.ProgressInformationChanged += (sender, name) =>
+            ShowProgressInfo.ProgressInformationChanged += (sender, name) =>
             {
                 if (name == ProgressInfoName)
                 {
@@ -38,14 +38,14 @@ namespace GenericViewModels.ViewModels
 
         public async Task InitAsync()
         {
-            using (_showProgressInfo.StartInProgress(ProgressInfoName))
+            using (ShowProgressInfo.StartInProgress(ProgressInfoName))
             {
                 await InitCoreAsync();
                 _initialized.Signal();
             }
         }
 
-        public bool InProgress => _showProgressInfo.InProgress(ProgressInfoName);
+        public bool InProgress => ShowProgressInfo.InProgress(ProgressInfoName);
 
         #region Error Information
         private bool _hasError;
