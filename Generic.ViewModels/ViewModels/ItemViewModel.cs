@@ -18,8 +18,8 @@ namespace GenericViewModels.ViewModels
             : base(showProgressInfo)
             => _item = item;
 
-        private T _item;
-        public virtual T Item
+        private T? _item;
+        public virtual T? Item
         {
             get => _item;
             set => SetProperty(ref _item, value);

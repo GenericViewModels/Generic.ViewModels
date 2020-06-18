@@ -37,9 +37,18 @@ namespace GenericViewModels.Services
             _sharedItems.PropertyChanged += SharedItems_PropertyChanged;
         }
 
-        public virtual void Dispose()
+        public void Dispose()
         {
-            _sharedItems.PropertyChanged -= SharedItems_PropertyChanged;
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _sharedItems.PropertyChanged -= SharedItems_PropertyChanged;
+            }
         }
 
         private void SharedItems_PropertyChanged(object sender, PropertyChangedEventArgs e)

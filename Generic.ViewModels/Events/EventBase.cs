@@ -11,7 +11,7 @@ namespace GenericViewModels.Events
 
         public SynchronizationContext? SynchronizationContext { get; set; }
 
-        protected object _lockSubscriptions = new object();
+        private object _lockSubscriptions = new object();
         protected ICollection<IEventSubscription> Subscriptions => _subscriptions;
 
         protected virtual SubscriptionToken InternalSubscribe(IEventSubscription eventSubscription)

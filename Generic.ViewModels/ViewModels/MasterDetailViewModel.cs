@@ -43,12 +43,20 @@ namespace GenericViewModels.ViewModels
             _itemsService.PropertyChanged += ItemsService_PropertyChanged;
         }
 
-        public virtual void Dispose()
+        public void Dispose()
         {
-            _itemsService.SelectedItemChanged -= ItemsService_SelectedItemChanged;
-            _itemsService.PropertyChanged -= ItemsService_PropertyChanged;
+            Dispose(true);
 
             GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _itemsService.SelectedItemChanged -= ItemsService_SelectedItemChanged;
+                _itemsService.PropertyChanged -= ItemsService_PropertyChanged;
+            }
         }
 
         private void ItemsService_PropertyChanged(object sender, PropertyChangedEventArgs e)

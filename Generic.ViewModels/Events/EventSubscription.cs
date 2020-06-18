@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 
 namespace GenericViewModels.Events
 {
@@ -12,13 +11,13 @@ namespace GenericViewModels.Events
             _actionReference = actionReference;
         }
 
-        public Action Action => (Action)_actionReference.Target;
+        public Action? Action => (Action?)_actionReference.Target;
 
-        public SubscriptionToken SubscriptionToken { get; set; }
+        public SubscriptionToken? SubscriptionToken { get; set; }
 
         public virtual Action<object[]>? GetExecutionStrategy()
         {
-            Action action = this.Action;
+            Action? action = this.Action;
             if (action != null)
             {
                 return arguments =>
@@ -29,7 +28,11 @@ namespace GenericViewModels.Events
             return null;
         }
 
-        public virtual void InvokeAction(Action action) => action.Invoke();
+        public virtual void InvokeAction(Action action)
+        {
+            if (action == null) throw new ArgumentNullException(nameof(action));
+            action.Invoke();
+        }
     }
 
     public class EventSubscription<TPayload> : IEventSubscription
@@ -43,21 +46,21 @@ namespace GenericViewModels.Events
             _filterReference = filterReference;
         }
 
-        public Action<TPayload> Action => (Action<TPayload>)_actionReference.Target;
+        public Action<TPayload>? Action => (Action<TPayload>?)_actionReference.Target;
 
-        public Predicate<TPayload> Filter => (Predicate<TPayload>)_filterReference.Target;
+        public Predicate<TPayload>? Filter => (Predicate<TPayload>?)_filterReference.Target;
 
-        public SubscriptionToken SubscriptionToken { get; set; }
+        public SubscriptionToken? SubscriptionToken { get; set; }
 
-        public virtual Action<object[]> GetExecutionStrategy()
+        public virtual Action<object[]>? GetExecutionStrategy()
         {
-            Action<TPayload> action = this.Action;
-            Predicate<TPayload> filter = this.Filter;
+            Action<TPayload>? action = this.Action;
+            Predicate<TPayload>? filter = this.Filter;
             if (action != null && filter != null)
             {
                 return arguments =>
                 {
-                    TPayload argument = default(TPayload);
+                    TPayload argument = default;
                     if (arguments != null && arguments.Length > 0 && arguments[0] != null)
                     {
                         argument = (TPayload)arguments[0];

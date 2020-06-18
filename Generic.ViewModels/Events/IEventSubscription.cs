@@ -4,8 +4,8 @@ namespace GenericViewModels.Events
 {
     public interface IEventSubscription
     {
-        SubscriptionToken SubscriptionToken { get; set; }
+        SubscriptionToken? SubscriptionToken { get; set; }
 
-        Action<object[]> GetExecutionStrategy();
+        Action<object[]>? GetExecutionStrategy();
     }
 }

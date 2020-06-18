@@ -36,11 +36,19 @@ namespace GenericViewModels.ViewModels
             };
         }
 
-        public virtual void Dispose()
+        public void Dispose()
         {
-            ItemsService.SelectedItemChanged -= OnSelectedItemChanged;
+            Dispose(true);
 
             GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                ItemsService.SelectedItemChanged -= OnSelectedItemChanged;
+            }
         }
 
         protected virtual void OnSelectedItemChanged(object sender, SelectedItemEventArgs<TItem> e)
