@@ -13,7 +13,7 @@ namespace GenericViewModels.Services
         }
 
         // contains all the unfiltered items from the service
-        protected readonly List<T> _allItems = new List<T>();
+        protected List<T> AllItems { get; } = new List<T>();
 
         public Func<T, bool>? Filter { get; set; }
 
@@ -21,7 +21,7 @@ namespace GenericViewModels.Services
         {
             // pass filtered items to the Items collection that is shared between views
             Items.Clear();
-            foreach (var item in _allItems)
+            foreach (var item in AllItems)
             {
                 if (Filter == null)
                 {
