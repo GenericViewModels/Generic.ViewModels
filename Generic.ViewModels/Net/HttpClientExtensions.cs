@@ -44,7 +44,7 @@ namespace GenericViewModels.Net
             if (item == null) throw new ArgumentNullException(nameof(item));
 
             string json = JsonSerializer.Serialize(item, s_options);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            using var content = new StringContent(json, Encoding.UTF8, "application/json");
             HttpResponseMessage response = await httpClient.PostAsync(url, content);
             response.EnsureSuccessStatusCode();
             Stream stream = await response.Content.ReadAsStreamAsync();
@@ -59,7 +59,7 @@ namespace GenericViewModels.Net
             if (item == null) throw new ArgumentNullException(nameof(item));
 
             string json = JsonSerializer.Serialize(item, s_options);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            using var content = new StringContent(json, Encoding.UTF8, "application/json");
             HttpResponseMessage response = await httpClient.PutAsync(url, content);
             response.EnsureSuccessStatusCode();
         }
