@@ -68,8 +68,12 @@ namespace Generic.ViewModels.Tests.ViewModels
             mockShowProgress.Setup(service => service.StartInProgress("progress1"));
             _showProgressInfo = mockShowProgress.Object;
 
-            var mockLogger = new Mock<ILoggerFactory>();
-            _loggerFactory = mockLogger.Object;
+            var mockLogger = new Mock<ILogger>();
+            var mockLoggerFactory = new Mock<ILoggerFactory>();
+            mockLoggerFactory
+                .Setup(factory => factory.CreateLogger(It.IsAny<string>()))
+                .Returns(mockLogger.Object);
+            _loggerFactory = mockLoggerFactory.Object;
         }
 
         private readonly IItemsService<AnItem> _itemsService;
@@ -99,6 +103,7 @@ namespace Generic.ViewModels.Tests.ViewModels
         public void BeginEdit_IsEditMode()
         {
             var viewModel = new TestEditableItemViewModel(_itemsService, _showProgressInfo, _loggerFactory);
+            viewModel.Item = new AnItem { Text = "init" };
 
             viewModel.BeginEdit();
 
@@ -109,6 +114,7 @@ namespace Generic.ViewModels.Tests.ViewModels
         public void BeginEdit_CreateCopy()
         {
             var viewModel = new TestEditableItemViewModel(_itemsService, _showProgressInfo, _loggerFactory);
+            viewModel.Item = new AnItem { Text = "init" };
 
             viewModel.BeginEdit();
             viewModel.EditItem.Text = "new text";
@@ -117,9 +123,21 @@ namespace Generic.ViewModels.Tests.ViewModels
         }
 
         [Fact]
+        public void BeginEdit_ThrowException()
+        {
+            var viewModel = new TestEditableItemViewModel(_itemsService, _showProgressInfo, _loggerFactory);
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                viewModel.BeginEdit();
+            });
+        }
+
+        [Fact]
         public void CancelEdit_EditMode()
         {
             var viewModel = new TestEditableItemViewModel(_itemsService, _showProgressInfo, _loggerFactory);
+            viewModel.Item = new AnItem { Text = "init" };
+
             viewModel.BeginEdit();
 
             viewModel.CancelEdit();
@@ -131,12 +149,14 @@ namespace Generic.ViewModels.Tests.ViewModels
         public void CancelEdit_EditItemReset()
         {
             var viewModel = new TestEditableItemViewModel(_itemsService, _showProgressInfo, _loggerFactory);
+            string text = "init";
+            viewModel.Item = new AnItem { Text = text };
             viewModel.BeginEdit();
             viewModel.EditItem.Text = "new text";
 
             viewModel.CancelEdit();
 
-            Assert.Equal("second", viewModel.Item.Text);
+            Assert.Equal(text, viewModel.Item.Text);
             Assert.Equal(viewModel.Item.Text, viewModel.EditItem.Text);
         }
 
@@ -144,12 +164,16 @@ namespace Generic.ViewModels.Tests.ViewModels
         public void EndEdit_ItemSaved()
         {
             var viewModel = new TestEditableItemViewModel(_itemsService, _showProgressInfo, _loggerFactory);
+            string text = "init";
+            string newText = "new text";
+            viewModel.Item = new AnItem { Text = text };
+
             viewModel.BeginEdit();
-            viewModel.EditItem.Text = "new text";
+            viewModel.EditItem.Text = newText;
 
             viewModel.EndEdit();
 
-            Assert.Equal("new text", viewModel.EditItem.Text);
+            Assert.Equal(newText, viewModel.EditItem.Text);
             Assert.Equal(viewModel.EditItem.Text, viewModel.Item.Text);
         }
 
