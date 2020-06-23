@@ -1,10 +1,10 @@
 ﻿using BooksLib.Events;
 using BooksLib.Models;
 using BooksLib.Services;
+using GenericViewModels.Events;
 using GenericViewModels.Services;
 using GenericViewModels.ViewModels;
 using Microsoft.Extensions.Logging;
-using Prism.Events;
 using System;
 using System.Threading.Tasks;
 

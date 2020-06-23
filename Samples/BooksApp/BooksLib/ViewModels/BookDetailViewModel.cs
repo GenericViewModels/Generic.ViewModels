@@ -11,10 +11,8 @@ namespace BooksLib.ViewModels
     // this view model is used to display details of a book and allows editing
     public class BookDetailViewModel : EditableItemViewModel<Book>, IDisposable
     {
-        private readonly IItemsService<Book> _itemsService;
         private readonly INavigationService _navigationService;
         private readonly IMessageService _messageService;
-        private readonly ILogger _logger;
         public BookDetailViewModel(
             IItemsService<Book> itemsService, 
             INavigationService navigationService, 
@@ -23,10 +21,8 @@ namespace BooksLib.ViewModels
             ILoggerFactory loggerFactory)
             : base(itemsService, showProgressInfo, loggerFactory)
         {
-            _itemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
             _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
             _messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
-            _logger = loggerFactory.CreateLogger(this.GetType()) ?? throw new ArgumentNullException(nameof(loggerFactory));
 
             _itemsService.SelectedItemChanged += ItemsService_SelectedItemChanged;
         }
@@ -40,8 +36,6 @@ namespace BooksLib.ViewModels
         {
             Item = e.Item;
         }
-
-
 
         public bool UseNavigation { get; set; }
 

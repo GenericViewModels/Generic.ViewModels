@@ -1,4 +1,4 @@
-﻿using Prism.Mvvm;
+﻿using GenericViewModels.Core;
 
 namespace BooksLib.Models
 {

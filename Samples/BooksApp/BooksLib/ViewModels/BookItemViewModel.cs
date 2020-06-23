@@ -1,7 +1,7 @@
 ﻿using BooksLib.Models;
+using GenericViewModels.Core;
 using GenericViewModels.Services;
 using GenericViewModels.ViewModels;
-using Prism.Commands;
 using System;
 
 namespace BooksLib.ViewModels
