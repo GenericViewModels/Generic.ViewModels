@@ -1,10 +1,10 @@
 ﻿using BooksLib.Events;
 using BooksLib.Models;
 using BooksLib.Services;
+using GenericViewModels.Events;
 using GenericViewModels.Services;
 using GenericViewModels.ViewModels;
 using Microsoft.Extensions.Logging;
-using Prism.Events;
 using System;
 using System.Threading.Tasks;
 
@@ -44,8 +44,8 @@ namespace BooksLib.ViewModels
         protected override Task OnAddCoreAsync()
         {
             var newBook = new Book();
-            Items.Add(newBook);
-            SelectedItem = newBook;
+            _itemsService.Items.Add(newBook);
+            _itemsService.SelectedItem = newBook;
             return base.OnRefreshCoreAsync();
         }
 

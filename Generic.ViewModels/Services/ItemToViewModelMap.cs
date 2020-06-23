@@ -3,6 +3,8 @@
 namespace Generic.ViewModels.Services
 {
     public abstract class ItemToViewModelMap<T, TViewModel> : IItemToViewModelMap<T, TViewModel>
+        where T : class
+        where TViewModel: class
     {
         private static readonly ConcurrentDictionary<T, TViewModel> s_map = new ConcurrentDictionary<T, TViewModel>();
        
@@ -16,7 +18,7 @@ namespace Generic.ViewModels.Services
             }
         }
 
-        public TViewModel GetViewModel(T item)
+        public TViewModel? GetViewModel(T? item)
         {
             if (item == null)
             {

@@ -1,5 +1,4 @@
 ﻿using BooksLib.ViewModels;
-using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 
 namespace WPFBooksApp

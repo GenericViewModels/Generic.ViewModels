@@ -8,15 +8,15 @@ namespace GenericViewModels.Services
     {
         private readonly ConcurrentDictionary<string, int> _progressCountersDict = new ConcurrentDictionary<string, int>();
 
-        public event EventHandler<string> ProgressInformationChanged;
+        public event EventHandler<string>? ProgressInformationChanged;
 
         private readonly object _lockSetInProgress = new object();
 
-        protected virtual void SetInProgress(string name, bool set = true)
+        protected virtual void SetInProgress(string name, bool setInProgress = true)
         {
             lock (_lockSetInProgress)
             {
-                if (set)
+                if (setInProgress)
                 {
                     int count = _progressCountersDict.GetOrAdd(name, 0);
                     count++;
@@ -30,10 +30,8 @@ namespace GenericViewModels.Services
                 }
             }
 
-            RaiseProgressInformationChanged(name);
+            ProgressInformationChanged?.Invoke(this, name);
         }
-
-        protected virtual void RaiseProgressInformationChanged(string name) => ProgressInformationChanged?.Invoke(this, name);
 
         public IDisposable StartInProgress(string name) =>
             new StartEndInvoker(() => SetInProgress(name), () => SetInProgress(name, false));

@@ -1,26 +1,23 @@
 ﻿using GenericViewModels.Services;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Xunit;
 
 namespace Generic.ViewModels.Tests.Services
 {
-    public class SelectedItemServiceTests
+    public class SharedItemsTests
     {
         [Fact]
         public void SetSelectedItemWithChange()
         {
             // arrange
-            var service = new SelectedItemService<string>();
+            var sharedItems = new SharedItems<string>();
             bool firedEvent = false;
-            service.SelectedItem = "one";
-            service.SelectedItemChanged += (sender, e) =>
+            sharedItems.SetSelectedItem("one");
+            sharedItems.SelectedItemChanged += (sender, e) =>
             {
                 firedEvent = true;
             };
             // act
-            service.SelectedItem = "two";
+            sharedItems.SetSelectedItem("two");
             // assert
             Assert.True(firedEvent);
         }
@@ -29,15 +26,15 @@ namespace Generic.ViewModels.Tests.Services
         public void SetSelectedItemWithNoChange()
         {
             // arrange
-            var service = new SelectedItemService<string>();
+            var sharedItems = new SharedItems<string>();
             bool firedEvent = false;
-            service.SelectedItem = "one";
-            service.SelectedItemChanged += (sender, e) =>
+            sharedItems.SetSelectedItem("one");
+            sharedItems.SelectedItemChanged += (sender, e) =>
             {
                 firedEvent = true;
             };
             // act
-            service.SelectedItem = "one";
+            sharedItems.SetSelectedItem("one");
             // assert
             Assert.False(firedEvent);
         }

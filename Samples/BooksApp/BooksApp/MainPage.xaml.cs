@@ -20,6 +20,7 @@ namespace BooksApp
             Unloaded += (sender, e) => _scope.Dispose();
 
             ViewModel = _scope.ServiceProvider.GetRequiredService<MainPageViewModel>();
+            _eventAggregator = _scope.ServiceProvider.GetRequiredService<IEventAggregator>();
             ViewModel.SetNavigationFrame(ContentFrame);
         }
 

@@ -1,6 +1,5 @@
 using GenericViewModels.Core;
 using GenericViewModels.Services;
-using Prism.Mvvm;
 using System;
 using System.Threading.Tasks;
 
@@ -9,16 +8,16 @@ namespace GenericViewModels.ViewModels
     /// <summary>
     /// Base class for View-models with progress and error information
     /// </summary>
-    public abstract class ViewModelBase : BindableBase
+    public abstract class ViewModelBase : BindableBase, IDisposable
     {
-        protected readonly AsyncEventSlim _initialized = new AsyncEventSlim();
-        protected readonly IShowProgressInfo _showProgressInfo;
+        protected AsyncEventSlim InitializedEvent { get; } = new AsyncEventSlim();
+        protected IShowProgressInfo ShowProgressInfo { get; }
 
         public ViewModelBase(IShowProgressInfo showProgressInfo)
         {
-            _showProgressInfo = showProgressInfo ?? throw new ArgumentNullException(nameof(showProgressInfo));
+            ShowProgressInfo = showProgressInfo ?? throw new ArgumentNullException(nameof(showProgressInfo));
 
-            _showProgressInfo.ProgressInformationChanged += (sender, name) =>
+            ShowProgressInfo.ProgressInformationChanged += (sender, name) =>
             {
                 if (name == ProgressInfoName)
                 {
@@ -29,7 +28,6 @@ namespace GenericViewModels.ViewModels
 
         public string ProgressInfoName { get; set; } = "Default";
 
-
         /// <summary>
         /// Override for special initialization.
         /// Empty implementation with ViewModelBase
@@ -39,14 +37,25 @@ namespace GenericViewModels.ViewModels
 
         public async Task InitAsync()
         {
-            using (_showProgressInfo.StartInProgress(ProgressInfoName))
+            using var progress = ShowProgressInfo.StartInProgress(ProgressInfoName);
+            await InitCoreAsync();
+            InitializedEvent.Signal();
+        }
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
             {
-                await InitCoreAsync();
-                _initialized.Signal();
+                InitializedEvent.Dispose();
             }
         }
 
-        public bool InProgress => _showProgressInfo.InProgress(ProgressInfoName);
+        public bool InProgress => ShowProgressInfo.InProgress(ProgressInfoName);
 
         #region Error Information
         private bool _hasError;
@@ -56,8 +65,8 @@ namespace GenericViewModels.ViewModels
             set => SetProperty(ref _hasError, value);
         }
 
-        private string _errorMessage;
-        public string ErrorMessage
+        private string? _errorMessage;
+        public string? ErrorMessage
         {
             get => _errorMessage;
             set => SetProperty(ref _errorMessage, value);

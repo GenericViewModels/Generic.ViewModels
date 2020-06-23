@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GenericViewModels.Core
@@ -7,9 +8,14 @@ namespace GenericViewModels.Core
     /// AsyncEventSlim allows non-blocking wait for a signal to be set
     /// With the implementation, <see cref="ManualResetEventSlim"/> is used
     /// </summary>
-    public class AsyncEventSlim
+    public sealed class AsyncEventSlim : IDisposable
     {
-        private ManualResetEventSlim _event = new ManualResetEventSlim(false);
+        private readonly ManualResetEventSlim _event = new ManualResetEventSlim(false);
+
+        public void Dispose()
+        {
+            _event.Dispose();
+        }
 
         /// <summary>
         /// Sets the event

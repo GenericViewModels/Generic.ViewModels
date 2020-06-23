@@ -1,106 +1,98 @@
+using Generic.ViewModels.Services;
+using GenericViewModels.Diagnostics;
 using GenericViewModels.Services;
 using Microsoft.Extensions.Logging;
-using Prism.Commands;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace GenericViewModels.ViewModels
 {
-    public abstract class MasterDetailViewModel<TItemViewModel, TItem> : ViewModelBase, IDisposable
-        where TItemViewModel : IItemViewModel<TItem>
+    public abstract class MasterDetailViewModel<TItemViewModel, TItem> : ViewModelBase
+        where TItemViewModel : class, IItemViewModel<TItem>
         where TItem : class
     {
-        protected readonly IItemsService<TItem> _itemsService;
-        private readonly ILogger<MasterDetailViewModel<TItemViewModel, TItem>> _logger;
+        protected IItemsService<TItem> ItemsService { get; }
+        protected ILogger Logger { get; }
+
+        private readonly IItemToViewModelMap<TItem, TItemViewModel> _viewModelMap;
 
         public MasterDetailViewModel(
             IItemsService<TItem> itemsService,
+            IItemToViewModelMap<TItem, TItemViewModel> viewModelMap,
             IShowProgressInfo showProgressInfo,
             ILoggerFactory loggerFactory)
             : base(showProgressInfo)
         {
-            _itemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
-            _logger = loggerFactory?.CreateLogger<MasterDetailViewModel<TItemViewModel, TItem>>() ?? throw new ArgumentNullException(nameof(loggerFactory));
+            ItemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
+            _viewModelMap = viewModelMap ?? throw new ArgumentNullException(nameof(viewModelMap));
+            Logger = loggerFactory?.CreateLogger(GetType()) ?? throw new ArgumentNullException(nameof(loggerFactory));
 
-            _logger.LogTrace("ctor MasterDetailViewModel");
+            ItemsService.SelectedItemChanged += ItemsService_SelectedItemChanged;
 
-            _itemsService.SelectedItemChanged += ItemsService_SelectedItemChanged;
-
-            _itemsService.Items.CollectionChanged += (sender, e) =>
+            ItemsService.Items.CollectionChanged += (sender, e) =>
             {
-                RaisePropertyChanged(nameof(ItemsViewModels));
+                RaisePropertyChanged(nameof(Items));
             };
 
-            RefreshCommand = new DelegateCommand(OnRefresh);
-            AddCommand = new DelegateCommand(OnAdd);
+            ItemsService.PropertyChanged += ItemsService_PropertyChanged;
         }
 
-        public virtual void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            _itemsService.SelectedItemChanged -= ItemsService_SelectedItemChanged;
+            if (disposing)
+            {
+                ItemsService.SelectedItemChanged -= ItemsService_SelectedItemChanged;
+                ItemsService.PropertyChanged -= ItemsService_PropertyChanged;
+            }
         }
+
+        private void ItemsService_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "IsEditMode")
+            {
+                // fire property change on IsReadMode which is used to hide the list in the UI
+                RaisePropertyChanged(nameof(IsReadMode));
+            }
+        }
+
+        public bool IsReadMode => !ItemsService.IsEditMode;
 
         private void ItemsService_SelectedItemChanged(object sender, SelectedItemEventArgs<TItem> e)
         {
-            _logger.LogTrace($"SelectedItem change event received fom items service with {e.Item}");
+            Logger.LogTrace(LoggingMessages.SelectedItemChanged(typeof(MasterDetailViewModel<TItemViewModel, TItem>), e.Item));
             RaisePropertyChanged(nameof(SelectedItem));
-            RaisePropertyChanged(nameof(SelectedItemViewModel));
         }
 
         protected override Task InitCoreAsync() => RefreshAsync();
 
-        public DelegateCommand RefreshCommand { get; }
-        public DelegateCommand AddCommand { get; }
+        protected virtual TItemViewModel? ToViewModel(TItem? item) => 
+            _viewModelMap.GetViewModel(item);
 
-        public ObservableCollection<TItem> Items => _itemsService.Items;
+        public virtual IEnumerable<TItemViewModel?> Items => 
+            ItemsService.Items.Select(item => ToViewModel(item));
 
-        protected abstract TItemViewModel ToViewModel(TItem item);
-
-        public virtual IEnumerable<TItemViewModel> ItemsViewModels => Items.Select(item => ToViewModel(item));
-
-        public virtual TItem SelectedItem
+        public virtual TItemViewModel? SelectedItem
         {
-            get => _itemsService.SelectedItem;
+            get => ToViewModel(ItemsService.SelectedItem);
             set
             {
-                _logger.LogTrace($"{nameof(SelectedItem)} updating to {value}");
-                _itemsService.SelectedItem = value;
-            }
-        }
-
-        public virtual TItemViewModel SelectedItemViewModel
-        {
-            get => ToViewModel(_itemsService.SelectedItem);
-            set
-            {
-                if (value != null && !EqualityComparer<TItem>.Default.Equals(SelectedItem, value.Item))
+                Logger.LogTrace($"SelectedItem updating to item {value?.Item}");
+                if (value?.Item != null)
                 {
-                    _logger.LogTrace($"SelectedItemViewModel updating to item {value?.Item}");
-                    SelectedItem = value.Item;
+                    ItemsService.SetSelectedItem(value.Item);
                 }
             }
         }
 
-        /// <summary>
-        /// preparations for progress information,
-        /// invokes <see cref="RefreshAsync"/> and sets the <see cref="SelectedItem"/> property
-        /// Invoked by the <see cref="RefreshCommand"/> 
-        /// </summary>
-        protected async void OnRefresh() => await RefreshAsync();
-
-        private async Task RefreshAsync()
+        protected async Task RefreshAsync()
         {
-            _logger.LogTrace($"{nameof(RefreshAsync)}");
+            Logger.LogTrace(LoggingMessages.Refresh(typeof(MasterDetailViewModel<TItemViewModel, TItem>)));
 
-            using (_showProgressInfo.StartInProgress(ProgressInfoName))
-            {
-                await OnRefreshCoreAsync();
-                _logger.LogTrace($"{nameof(RefreshAsync)}");
-
-            }
+            using var progress = ShowProgressInfo.StartInProgress(ProgressInfoName);
+            await OnRefreshCoreAsync();
         }
 
         /// <summary>
@@ -109,15 +101,8 @@ namespace GenericViewModels.ViewModels
         /// <returns>> <see cref="Task"/></returns>
         protected virtual async Task OnRefreshCoreAsync()
         {
-            _logger.LogTrace($"{nameof(OnRefreshCoreAsync)}");
-
-            await _itemsService.RefreshAsync();
+            await ItemsService.RefreshAsync();
         }
-
-        /// <summary>
-        /// Override <see cref="OnAddCoreAsync" to prepare adding an item/>
-        /// </summary>
-        protected async void OnAdd() => await OnAddCoreAsync();
 
         /// <summary>
         /// Override to create an implementation to add a new item

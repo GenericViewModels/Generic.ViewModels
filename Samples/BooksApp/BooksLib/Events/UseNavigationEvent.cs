@@ -1,4 +1,4 @@
-﻿using Prism.Events;
+﻿using GenericViewModels.Events;
 
 namespace BooksLib.Events
 {

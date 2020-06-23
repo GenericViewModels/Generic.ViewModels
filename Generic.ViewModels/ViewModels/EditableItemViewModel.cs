@@ -1,6 +1,6 @@
-﻿using GenericViewModels.Services;
+﻿using GenericViewModels.Diagnostics;
+using GenericViewModels.Services;
 using Microsoft.Extensions.Logging;
-using Prism.Commands;
 using System;
 using System.ComponentModel;
 using System.Linq;
@@ -8,11 +8,13 @@ using System.Threading.Tasks;
 
 namespace GenericViewModels.ViewModels
 {
-    public abstract class EditableItemViewModel<TItem> : ItemViewModel<TItem>, IEditableObject, IDisposable
+    public abstract class EditableItemViewModel<TItem> : ItemViewModel<TItem>, IEditableObject
         where TItem : class
     {
-        private readonly IItemsService<TItem> _itemsService;
-        private readonly ILogger<EditableItemViewModel<TItem>> _logger;
+        private const string InvalidBeginEdit = "it's invalid calling BeginEdit before selecting an item";
+
+        protected IItemsService<TItem> ItemsService { get; }
+        protected ILogger Logger { get; }
 
         public EditableItemViewModel(
             IItemsService<TItem> itemsService,
@@ -20,45 +22,36 @@ namespace GenericViewModels.ViewModels
             ILoggerFactory loggerFactory)
             : base(showProgressInfo)
         {
-            _itemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
-            _logger = loggerFactory?.CreateLogger<EditableItemViewModel<TItem>>() ?? throw new ArgumentNullException(nameof(loggerFactory));
+            ItemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
+            Logger = loggerFactory?.CreateLogger(GetType()) ?? throw new ArgumentNullException(nameof(loggerFactory));
 
-            _logger.LogTrace("ctor EditableItemViewModel");
-
-            _itemsService.SelectedItemChanged += ItemsService_SelectedItemChanged;
+            ItemsService.SelectedItemChanged += OnSelectedItemChanged;
 
             PropertyChanged += (sender, e) =>
             {
                 if (e.PropertyName == nameof(Item))
                 {
-                    _logger.LogTrace($"PropertyChanged event with Item received, firing change event on EditItem");
+                    Logger.LogTrace($"PropertyChanged event with Item received, firing change event on EditItem");
                     RaisePropertyChanged(nameof(EditItem));
                 }
             };
-
-            EditCommand = new DelegateCommand(BeginEdit, () => IsReadMode);
-            CancelCommand = new DelegateCommand(CancelEdit, () => IsEditMode);
-            SaveCommand = new DelegateCommand(EndEdit, () => IsEditMode);
-            AddCommand = new DelegateCommand(OnAdd, () => IsReadMode);
-            DeleteCommand = new DelegateCommand(OnDelete);
         }
 
-        public virtual void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            _itemsService.SelectedItemChanged -= ItemsService_SelectedItemChanged;
+            if (disposing)
+            {
+                ItemsService.SelectedItemChanged -= OnSelectedItemChanged;
+            }
         }
 
-        private void ItemsService_SelectedItemChanged(object sender, SelectedItemEventArgs<TItem> e)
+        protected virtual void OnSelectedItemChanged(object sender, SelectedItemEventArgs<TItem> e)
         {
-            _logger.LogTrace($"SelectedItemChanged event from items service received, setting Item to {e.Item}");
+            if (e == null) throw new ArgumentNullException(nameof(e));
+
+            Logger.LogTrace(LoggingMessages.SelectedItemChanged(typeof(EditableItemViewModel<TItem>), e.Item));
             Item = e.Item;
         }
-
-        public DelegateCommand AddCommand { get; }
-        public DelegateCommand EditCommand { get; }
-        public DelegateCommand CancelCommand { get; }
-        public DelegateCommand SaveCommand { get; }
-        public DelegateCommand DeleteCommand { get; }
 
         /// <summary>
         /// Overriding this method is required to start the OnDelete method
@@ -78,26 +71,28 @@ namespace GenericViewModels.ViewModels
                 return;
             }
 
-            using (_showProgressInfo.StartInProgress(ProgressInfoName))
-            {
-                await OnDeleteCoreAsync();
-                await _itemsService.RefreshAsync();
-                SetSelectedItem(_itemsService.Items.FirstOrDefault());
+            using var progress = ShowProgressInfo.StartInProgress(ProgressInfoName);
+            await OnDeleteCoreAsync();
+            await ItemsService.RefreshAsync();
+            SetSelectedItem(ItemsService.Items.FirstOrDefault());
 
-                await OnEndEditAsync();
-            }
+            await OnEndEditAsync();
         }
 
         /// <summary>
-        /// Sets the SelectedItem in SharedItems.SelectedItems
+        /// Sets the SelectedItem in SharedItems.SelectedItems which raises the event SelecteItemsChanged
         /// </summary>
-        protected virtual void SetSelectedItem(TItem item)
+        protected virtual bool? SetSelectedItem(TItem? item)
         {
-            _logger.LogTrace($"SetSelectedItem - set selected and Item property to {item}");
+            Logger.LogTrace($"SetSelectedItem - set selected and Item property to {item}");
 
-            if (item == null) return;
-            _itemsService.SelectedItem = item;
-            Item = item;
+            if (item == null) return null;
+            bool? result = ItemsService.SetSelectedItem(item);
+            if (result == true)
+            {
+                Item = item;
+            }
+            return result;
         }
 
         #region Edit / Read Mode
@@ -117,24 +112,27 @@ namespace GenericViewModels.ViewModels
             {
                 if (SetProperty(ref _isEditMode, value))
                 {
+                    ItemsService.IsEditMode = _isEditMode;
+
                     RaisePropertyChanged(nameof(IsReadMode));
-                    CancelCommand.RaiseCanExecuteChanged();
-                    SaveCommand.RaiseCanExecuteChanged();
-                    EditCommand.RaiseCanExecuteChanged();
+
+                    OnEditCommandChanges();
                 }
             }
         }
 
+        protected abstract void OnEditCommandChanges();
+
         #endregion
 
         #region Copy Item for Edit Mode
-        private TItem _editItem;
+        private TItem? _editItem;
 
         /// <summary>
         /// EditItem returns the Item in read mode
         /// and contains a copy of the Item in edit mode
         /// </summary>
-        public TItem EditItem
+        public TItem? EditItem
         {
             get => _editItem ?? Item;
             set => SetProperty(ref _editItem, value);
@@ -188,9 +186,11 @@ namespace GenericViewModels.ViewModels
         /// </summary>
         public virtual void BeginEdit()
         {
-            _logger.LogTrace($"{nameof(BeginEdit)}, creating a copy of {Item}");
+            Logger.LogTrace($"{nameof(BeginEdit)}, creating a copy of {Item}");
 
-            if (Item == null) return;  // nothing selected
+#pragma warning disable CA1303 // Do not pass literals as localized parameters: exception information will not be localized
+            if (Item == null) throw new InvalidOperationException(InvalidBeginEdit);  // nothing selected
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
 
             IsEditMode = true;
             TItem itemCopy = CreateCopy(Item);
@@ -200,6 +200,12 @@ namespace GenericViewModels.ViewModels
             }
         }
 
+        private void ResetEditItem()
+        {
+            _editItem = default;
+            RaisePropertyChanged(nameof(EditItem));
+        }
+
         /// <summary>
         /// set back to read mode
         /// intializes the EditItem property to return the Item property
@@ -207,10 +213,10 @@ namespace GenericViewModels.ViewModels
         /// </summary>
         public async virtual void CancelEdit()
         {
-            _logger.LogTrace($"{nameof(CancelEdit)} with {EditItem}");
+            Logger.LogTrace($"{nameof(CancelEdit)} with {EditItem}");
 
             IsEditMode = false;
-            EditItem = default;
+            ResetEditItem();
 
             await OnEndEditAsync();
         }
@@ -223,32 +229,37 @@ namespace GenericViewModels.ViewModels
         /// </summary>
         public async virtual void EndEdit()
         {
-            _logger.LogTrace($"{nameof(EndEdit)} with {EditItem}");
+            Logger.LogTrace($"{nameof(EndEdit)} with {EditItem}");
 
-            using (_showProgressInfo.StartInProgress(ProgressInfoName))
+            using var progress = ShowProgressInfo.StartInProgress(ProgressInfoName);
+            await OnSaveCoreAsync();
+            if (Item != null)
             {
-                await OnSaveCoreAsync();
-                int index = _itemsService.Items.IndexOf(Item);  // with a new created item, its not in the Items collection
+                int index = ItemsService.Items.IndexOf(Item);  // with a new created item, its not in the Items collection
                 if (index >= 0)
                 {
-                    _itemsService.Items.RemoveAt(index);
+                    ItemsService.Items.RemoveAt(index);
                 }
-                Item = EditItem;
-                if (index >= 0)
-                {
-                    _itemsService.Items.Insert(index, Item);
-                }
-                else
-                {
-                    _itemsService.Items.Add(Item);
-                }
-                EditItem = default;
-                IsEditMode = false;
 
-                SetSelectedItem(Item);
-
-                await OnEndEditAsync();
+                if (EditItem != null)
+                { 
+                    Item = EditItem;
+                    if (index >= 0)
+                    {
+                        ItemsService.Items.Insert(index, Item);
+                    }
+                    else
+                    {
+                        ItemsService.Items.Add(Item);
+                    }
+                }
             }
+            ResetEditItem();
+            IsEditMode = false;
+
+            SetSelectedItem(Item);
+
+            await OnEndEditAsync();
         }
         #endregion
     }
