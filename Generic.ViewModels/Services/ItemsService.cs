@@ -20,6 +20,7 @@ namespace GenericViewModels.Services
             add => _sharedItems.ItemsRefreshed += value;
             remove => _sharedItems.ItemsRefreshed -= value;
         }
+
         public event EventHandler<SelectedItemEventArgs<T>> SelectedItemChanged
         {
             add => _sharedItems.SelectedItemChanged += value;
