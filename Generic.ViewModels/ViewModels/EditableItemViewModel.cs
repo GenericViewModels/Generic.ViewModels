@@ -11,6 +11,8 @@ namespace GenericViewModels.ViewModels
     public abstract class EditableItemViewModel<TItem> : ItemViewModel<TItem>, IEditableObject
         where TItem : class
     {
+        private const string InvalidBeginEdit = "it's invalid calling BeginEdit before selecting an item";
+
         protected IItemsService<TItem> ItemsService { get; }
         protected ILogger Logger { get; }
 
@@ -92,8 +94,6 @@ namespace GenericViewModels.ViewModels
             }
             return result;
         }
-
-        private const string InvalidBeginEdit = "it's invalid calling BeginEdit before selecting an item";
 
         #region Edit / Read Mode
         private bool _isEditMode;
@@ -188,7 +188,9 @@ namespace GenericViewModels.ViewModels
         {
             Logger.LogTrace($"{nameof(BeginEdit)}, creating a copy of {Item}");
 
+#pragma warning disable CA1303 // Do not pass literals as localized parameters: exception information will not be localized
             if (Item == null) throw new InvalidOperationException(InvalidBeginEdit);  // nothing selected
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
 
             IsEditMode = true;
             TItem itemCopy = CreateCopy(Item);
