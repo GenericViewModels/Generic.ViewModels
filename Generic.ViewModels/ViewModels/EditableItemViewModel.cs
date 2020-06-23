@@ -93,6 +93,8 @@ namespace GenericViewModels.ViewModels
             return result;
         }
 
+        private const string InvalidBeginEdit = "it's invalid calling BeginEdit before selecting an item";
+
         #region Edit / Read Mode
         private bool _isEditMode;
         /// <summary>
@@ -186,7 +188,7 @@ namespace GenericViewModels.ViewModels
         {
             Logger.LogTrace($"{nameof(BeginEdit)}, creating a copy of {Item}");
 
-            if (Item == null) return;  // nothing selected
+            if (Item == null) throw new InvalidOperationException(InvalidBeginEdit);  // nothing selected
 
             IsEditMode = true;
             TItem itemCopy = CreateCopy(Item);
