@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace GenericViewModels.Events
 {
@@ -20,6 +18,8 @@ namespace GenericViewModels.Events
 
         public virtual SubscriptionToken Subscribe(Action action, ThreadOption threadOption, bool keepSubscriberReferenceAlive)
         {
+            if (action == null) throw new ArgumentNullException(nameof(action));
+
             DispatcherEventSubscription GetDispatcherEventSubscription(IDelegateReference actionReference)
             {
                 if (SynchronizationContext == null) throw new InvalidOperationException("event aggregator not on UI thread");
@@ -93,7 +93,7 @@ namespace GenericViewModels.Events
             return Subscribe(action, threadOption, keepSubscriberReferenceAlive, null);
         }
 
-        public virtual SubscriptionToken Subscribe(Action<TPayload> action, ThreadOption threadOption, bool keepSubscriberReferenceAlive, Predicate<TPayload> filter)
+        public virtual SubscriptionToken Subscribe(Action<TPayload> action, ThreadOption threadOption, bool keepSubscriberReferenceAlive, Predicate<TPayload>? filter)
         {
             DispatcherEventSubscription<TPayload> GetDispatcherEventSubscription(IDelegateReference actionReference, IDelegateReference filterReference)
             {
@@ -126,6 +126,8 @@ namespace GenericViewModels.Events
 
         public virtual void Publish(TPayload payload)
         {
+            if (payload == null) throw new ArgumentNullException(nameof(payload));
+
             InternalPublish(payload);
         }
 

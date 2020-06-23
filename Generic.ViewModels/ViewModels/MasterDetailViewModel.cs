@@ -1,4 +1,5 @@
 using Generic.ViewModels.Services;
+using GenericViewModels.Diagnostics;
 using GenericViewModels.Services;
 using Microsoft.Extensions.Logging;
 using System;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace GenericViewModels.ViewModels
 {
-    public abstract class MasterDetailViewModel<TItemViewModel, TItem> : ViewModelBase, IDisposable
+    public abstract class MasterDetailViewModel<TItemViewModel, TItem> : ViewModelBase
         where TItemViewModel : class, IItemViewModel<TItem>
         where TItem : class
     {
@@ -31,8 +32,6 @@ namespace GenericViewModels.ViewModels
             _viewModelMap = viewModelMap ?? throw new ArgumentNullException(nameof(viewModelMap));
             _logger = loggerFactory?.CreateLogger(GetType()) ?? throw new ArgumentNullException(nameof(loggerFactory));
 
-            _logger.LogTrace("ctor MasterDetailViewModel");
-
             _itemsService.SelectedItemChanged += ItemsService_SelectedItemChanged;
 
             _itemsService.Items.CollectionChanged += (sender, e) =>
@@ -43,14 +42,7 @@ namespace GenericViewModels.ViewModels
             _itemsService.PropertyChanged += ItemsService_PropertyChanged;
         }
 
-        public void Dispose()
-        {
-            Dispose(true);
-
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
@@ -72,15 +64,17 @@ namespace GenericViewModels.ViewModels
 
         private void ItemsService_SelectedItemChanged(object sender, SelectedItemEventArgs<TItem> e)
         {
-            _logger.LogTrace($"SelectedItem change event received fom items service with {e.Item}");
+            _logger.LogTrace(LoggingMessages.SelectedItemChanged(typeof(MasterDetailViewModel<TItemViewModel, TItem>), e.Item));
             RaisePropertyChanged(nameof(SelectedItem));
         }
 
         protected override Task InitCoreAsync() => RefreshAsync();
 
-        protected virtual TItemViewModel? ToViewModel(TItem item) => _viewModelMap.GetViewModel(item);
+        protected virtual TItemViewModel? ToViewModel(TItem? item) => 
+            _viewModelMap.GetViewModel(item);
 
-        public virtual IEnumerable<TItemViewModel> Items => ItemsService.Items.Select(item => ToViewModel(item));
+        public virtual IEnumerable<TItemViewModel?> Items => 
+            ItemsService.Items.Select(item => ToViewModel(item));
 
         public virtual TItemViewModel? SelectedItem
         {
@@ -97,11 +91,10 @@ namespace GenericViewModels.ViewModels
 
         protected async Task RefreshAsync()
         {
-            _logger.LogTrace($"{nameof(RefreshAsync)}");
+            _logger.LogTrace(LoggingMessages.Refresh(typeof(MasterDetailViewModel<TItemViewModel, TItem>)));
 
             using var progress = ShowProgressInfo.StartInProgress(ProgressInfoName);
             await OnRefreshCoreAsync();
-            _logger.LogTrace($"{nameof(RefreshAsync)}");
         }
 
         /// <summary>
@@ -110,8 +103,6 @@ namespace GenericViewModels.ViewModels
         /// <returns>> <see cref="Task"/></returns>
         protected virtual async Task OnRefreshCoreAsync()
         {
-            _logger.LogTrace($"{nameof(OnRefreshCoreAsync)}");
-
             await _itemsService.RefreshAsync();
         }
 

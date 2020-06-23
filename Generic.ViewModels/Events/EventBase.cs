@@ -65,7 +65,7 @@ namespace GenericViewModels.Events
             {
                 for (var i = Subscriptions.Count - 1; i >= 0; i--)
                 {
-                    Action<object[]> listItem =
+                    Action<object[]>? listItem =
                         _subscriptions[i].GetExecutionStrategy();
 
                     if (listItem == null)

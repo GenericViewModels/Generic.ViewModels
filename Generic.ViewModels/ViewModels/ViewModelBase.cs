@@ -8,9 +8,9 @@ namespace GenericViewModels.ViewModels
     /// <summary>
     /// Base class for View-models with progress and error information
     /// </summary>
-    public abstract class ViewModelBase : BindableBase
+    public abstract class ViewModelBase : BindableBase, IDisposable
     {
-        protected readonly AsyncEventSlim _initialized = new AsyncEventSlim();
+        protected AsyncEventSlim InitializedEvent { get; } = new AsyncEventSlim();
         protected IShowProgressInfo ShowProgressInfo { get; }
 
         public ViewModelBase(IShowProgressInfo showProgressInfo)
@@ -28,7 +28,6 @@ namespace GenericViewModels.ViewModels
 
         public string ProgressInfoName { get; set; } = "Default";
 
-
         /// <summary>
         /// Override for special initialization.
         /// Empty implementation with ViewModelBase
@@ -38,10 +37,21 @@ namespace GenericViewModels.ViewModels
 
         public async Task InitAsync()
         {
-            using (ShowProgressInfo.StartInProgress(ProgressInfoName))
+            using var progress = ShowProgressInfo.StartInProgress(ProgressInfoName);
+            await InitCoreAsync();
+            InitializedEvent.Signal();
+        }
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
             {
-                await InitCoreAsync();
-                _initialized.Signal();
+                InitializedEvent.Dispose();
             }
         }
 

@@ -18,7 +18,7 @@ namespace Generic.ViewModels.Services
             }
         }
 
-        public TViewModel? GetViewModel(T item)
+        public TViewModel? GetViewModel(T? item)
         {
             if (item == null)
             {

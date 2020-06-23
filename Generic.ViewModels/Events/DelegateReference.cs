@@ -10,7 +10,7 @@ namespace GenericViewModels.Events
         private readonly MethodInfo? _method;
         private readonly Type? _delegateType;
 
-        public DelegateReference(Delegate @delegate, bool keepReferenceAlive)
+        public DelegateReference(Delegate? @delegate, bool keepReferenceAlive)
         {
             if (keepReferenceAlive)
             {
@@ -18,9 +18,9 @@ namespace GenericViewModels.Events
             }
             else
             {
-                _weakReference = new WeakReference(@delegate.Target);
+                _weakReference = new WeakReference(@delegate?.Target);
                 _method = @delegate.GetMethodInfo();
-                _delegateType = @delegate.GetType();
+                _delegateType = @delegate?.GetType();
             }
         }
         
@@ -33,7 +33,7 @@ namespace GenericViewModels.Events
             };
         }
         
-        public bool TargetEquals(Delegate @delegate)
+        public bool TargetEquals(Delegate? @delegate)
         {
             if (_delegate != null)
             {

@@ -5,7 +5,7 @@
         where TViewModel : class
     {
         void Add(T item, TViewModel viewModel);
-        TViewModel? GetViewModel(T item);
+        TViewModel? GetViewModel(T? item);
         void Reset();
     }
 }

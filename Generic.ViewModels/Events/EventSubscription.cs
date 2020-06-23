@@ -65,7 +65,8 @@ namespace GenericViewModels.Events
                     {
                         argument = (TPayload)arguments[0];
                     }
-                    if (filter(argument))
+
+                    if (argument != null && filter(argument))
                     {
                         InvokeAction(action, argument);
                     }

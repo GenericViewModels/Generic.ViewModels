@@ -1,4 +1,5 @@
 ﻿using GenericViewModels.Core;
+using GenericViewModels.Diagnostics;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.ObjectModel;
@@ -10,7 +11,7 @@ namespace GenericViewModels.Services
     public abstract class ItemsService<T> : BindableBase, IItemsService<T>, IDisposable
         where T : class
     {
-        protected AsyncEventSlim _initialized = new AsyncEventSlim();
+        protected AsyncEventSlim IsInitialized { get; } = new AsyncEventSlim();
         private readonly ISharedItems<T> _sharedItems;
         private readonly ILogger _logger;
 
@@ -32,7 +33,7 @@ namespace GenericViewModels.Services
         public ItemsService(ISharedItems<T> sharedItemsService, ILoggerFactory loggerFactory)
         {
             _sharedItems = sharedItemsService ?? throw new ArgumentNullException(nameof(sharedItemsService));
-            _logger = loggerFactory?.CreateLogger(GetType()) ?? throw new ArgumentNullException(nameof(loggerFactory));
+            _logger = loggerFactory.CreateLogger(GetType()) ?? throw new ArgumentNullException(nameof(loggerFactory));
 
             _sharedItems.PropertyChanged += SharedItems_PropertyChanged;
         }
@@ -47,6 +48,7 @@ namespace GenericViewModels.Services
         {
             if (disposing)
             {
+                IsInitialized.Dispose();
                 _sharedItems.PropertyChanged -= SharedItems_PropertyChanged;
             }
         }
@@ -55,11 +57,10 @@ namespace GenericViewModels.Services
         {
             if (e.PropertyName == "SelectedItem" || e.PropertyName == "IsEditMode")
             {
-                _logger.LogTrace($"PropertyChanged event from shared items received - property {e.PropertyName} - firing event");
+                _logger.LogTrace(LoggingMessages.PropertyChangedEvent(typeof(ItemsService<T>), e.PropertyName));
 
                 RaisePropertyChanged(e.PropertyName);
             }
-
         }
 
         /// <summary>
@@ -75,7 +76,7 @@ namespace GenericViewModels.Services
             }
             finally
             {
-                _initialized.Signal();
+                IsInitialized.Signal();
             }
         }
 
@@ -88,12 +89,11 @@ namespace GenericViewModels.Services
         /// <summary>
         /// Items from the <see cref="ISharedItemsService{T}"/>
         /// </summary>
-        public virtual ObservableCollection<T> Items => _sharedItems.Items;
+        public virtual ObservableCollection<T> Items => 
+            _sharedItems.Items;
 
-        public virtual T? SelectedItem
-        {
-            get => _sharedItems.SelectedItem;
-        }
+        public virtual T? SelectedItem => 
+            _sharedItems.SelectedItem;
 
         public virtual bool IsEditMode
         {
@@ -106,7 +106,8 @@ namespace GenericViewModels.Services
         /// </summary>
         /// <param name="item">The item to be added or updated</param>
         /// <returns>A <see cref="Task"/></returns>
-        public virtual Task<T> AddOrUpdateAsync(T item) => Task.FromResult<T>(default);
+        public virtual Task<T?> AddOrUpdateAsync(T item) => 
+            Task.FromResult<T?>(default);
 
         /// <summary>
         /// Override to delete the item.
@@ -121,11 +122,12 @@ namespace GenericViewModels.Services
         /// <returns>A <see cref="Task"/></returns>
         public virtual Task RefreshAsync()
         {
-            _logger.LogTrace("RefreshAsync - firing ItemsRefreshed event");
+            _logger.LogTrace(LoggingMessages.Refresh(typeof(ItemsService<T>)));
             RaiseItemsRefreshed();
             return Task.CompletedTask;
         }
 
-        public bool? SetSelectedItem(T item) => _sharedItems.SetSelectedItem(item);
+        public bool? SetSelectedItem(T item) => 
+            _sharedItems.SetSelectedItem(item);
     }
 }

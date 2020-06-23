@@ -12,7 +12,9 @@ namespace GenericViewModels.Services
         event EventHandler<EventArgs> ItemsRefreshed;
         event EventHandler<SelectedItemEventArgs<T>> SelectedItemChanged;
 
+#pragma warning disable CA1030 // Use events where appropriate - used to fire events from outside
         void RaiseItemsRefreshed();
+#pragma warning restore CA1030 // Use events where appropriate
 
         T? SelectedItem { get;  }
         bool? SetSelectedItem(T item);

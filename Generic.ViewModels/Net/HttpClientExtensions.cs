@@ -15,7 +15,7 @@ namespace GenericViewModels.Net
             PropertyNameCaseInsensitive = true
         };
 
-        public static async Task<IEnumerable<T>> GetItemsAsync<T>(this HttpClient httpClient, string url)
+        public static async Task<IEnumerable<T>> GetItemsAsync<T>(this HttpClient httpClient, Uri url)
         {
             if (httpClient == null) throw new ArgumentNullException(nameof(httpClient));
             if (url == null) throw new ArgumentNullException(nameof(url));
@@ -26,7 +26,7 @@ namespace GenericViewModels.Net
             return await JsonSerializer.DeserializeAsync<IEnumerable<T>>(stream, s_options);
         }
 
-        public static async Task<T> GetItemAsync<T>(this HttpClient httpClient, string url)
+        public static async Task<T> GetItemAsync<T>(this HttpClient httpClient, Uri url)
         {
             if (httpClient == null) throw new ArgumentNullException(nameof(httpClient));
             if (url == null) throw new ArgumentNullException(nameof(url));
@@ -37,7 +37,7 @@ namespace GenericViewModels.Net
             return await JsonSerializer.DeserializeAsync<T>(stream, s_options);
         }
 
-        public static async Task<T> AddItemAsync<T>(this HttpClient httpClient, string url, T item)
+        public static async Task<T> AddItemAsync<T>(this HttpClient httpClient, Uri url, T item)
         {
             if (httpClient == null) throw new ArgumentNullException(nameof(httpClient));
             if (url == null) throw new ArgumentNullException(nameof(url));
@@ -52,7 +52,7 @@ namespace GenericViewModels.Net
             return await JsonSerializer.DeserializeAsync<T>(stream, s_options);
         }
 
-        public static async Task UpdateItemAsync<T>(this HttpClient httpClient, string url, T item)
+        public static async Task UpdateItemAsync<T>(this HttpClient httpClient, Uri url, T item)
         {
             if (httpClient == null) throw new ArgumentNullException(nameof(httpClient));
             if (url == null) throw new ArgumentNullException(nameof(url));
@@ -64,7 +64,7 @@ namespace GenericViewModels.Net
             response.EnsureSuccessStatusCode();
         }
 
-        public static async Task<T> DeleteItemAsync<T>(this HttpClient httpClient, string url)
+        public static async Task<T> DeleteItemAsync<T>(this HttpClient httpClient, Uri url)
         {
             if (httpClient == null) throw new ArgumentNullException(nameof(httpClient));
             if (url == null) throw new ArgumentNullException(nameof(url));

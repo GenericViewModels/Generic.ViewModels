@@ -1,4 +1,5 @@
-﻿using GenericViewModels.Services;
+﻿using GenericViewModels.Diagnostics;
+using GenericViewModels.Services;
 using Microsoft.Extensions.Logging;
 using System;
 using System.ComponentModel;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace GenericViewModels.ViewModels
 {
-    public abstract class EditableItemViewModel<TItem> : ItemViewModel<TItem>, IEditableObject, IDisposable
+    public abstract class EditableItemViewModel<TItem> : ItemViewModel<TItem>, IEditableObject
         where TItem : class
     {
         protected IItemsService<TItem> ItemsService { get; }
@@ -22,8 +23,6 @@ namespace GenericViewModels.ViewModels
             ItemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
             Logger = loggerFactory?.CreateLogger(GetType()) ?? throw new ArgumentNullException(nameof(loggerFactory));
 
-            Logger.LogTrace("ctor EditableItemViewModel");
-
             ItemsService.SelectedItemChanged += OnSelectedItemChanged;
 
             PropertyChanged += (sender, e) =>
@@ -36,14 +35,7 @@ namespace GenericViewModels.ViewModels
             };
         }
 
-        public void Dispose()
-        {
-            Dispose(true);
-
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
@@ -53,7 +45,9 @@ namespace GenericViewModels.ViewModels
 
         protected virtual void OnSelectedItemChanged(object sender, SelectedItemEventArgs<TItem> e)
         {
-            Logger.LogTrace($"SelectedItemChanged event from items service received, setting Item to {e.Item}");
+            if (e == null) throw new ArgumentNullException(nameof(e));
+
+            Logger.LogTrace(LoggingMessages.SelectedItemChanged(typeof(EditableItemViewModel<TItem>), e.Item));
             Item = e.Item;
         }
 
@@ -86,7 +80,7 @@ namespace GenericViewModels.ViewModels
         /// <summary>
         /// Sets the SelectedItem in SharedItems.SelectedItems which raises the event SelecteItemsChanged
         /// </summary>
-        protected virtual bool? SetSelectedItem(TItem item)
+        protected virtual bool? SetSelectedItem(TItem? item)
         {
             Logger.LogTrace($"SetSelectedItem - set selected and Item property to {item}");
 
@@ -136,7 +130,7 @@ namespace GenericViewModels.ViewModels
         /// EditItem returns the Item in read mode
         /// and contains a copy of the Item in edit mode
         /// </summary>
-        public TItem EditItem
+        public TItem? EditItem
         {
             get => _editItem ?? Item;
             set => SetProperty(ref _editItem, value);
@@ -235,19 +229,26 @@ namespace GenericViewModels.ViewModels
 
             using var progress = ShowProgressInfo.StartInProgress(ProgressInfoName);
             await OnSaveCoreAsync();
-            int index = ItemsService.Items.IndexOf(Item);  // with a new created item, its not in the Items collection
-            if (index >= 0)
+            if (Item != null)
             {
-                ItemsService.Items.RemoveAt(index);
-            }
-            Item = EditItem;
-            if (index >= 0)
-            {
-                ItemsService.Items.Insert(index, Item);
-            }
-            else
-            {
-                ItemsService.Items.Add(Item);
+                int index = ItemsService.Items.IndexOf(Item);  // with a new created item, its not in the Items collection
+                if (index >= 0)
+                {
+                    ItemsService.Items.RemoveAt(index);
+                }
+
+                if (EditItem != null)
+                { 
+                    Item = EditItem;
+                    if (index >= 0)
+                    {
+                        ItemsService.Items.Insert(index, Item);
+                    }
+                    else
+                    {
+                        ItemsService.Items.Add(Item);
+                    }
+                }
             }
             ResetEditItem();
             IsEditMode = false;

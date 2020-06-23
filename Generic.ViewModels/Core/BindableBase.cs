@@ -8,8 +8,10 @@ namespace GenericViewModels.Core
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public virtual void RaisePropertyChanged(string propertyName) => 
+#pragma warning disable CA1030 // Use events where appropriate
+        protected virtual void RaisePropertyChanged(string propertyName) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+#pragma warning restore CA1030 // Use events where appropriate
 
         public bool SetProperty<T>(ref T item, T value, [CallerMemberName] string propertyName = default!)
         {

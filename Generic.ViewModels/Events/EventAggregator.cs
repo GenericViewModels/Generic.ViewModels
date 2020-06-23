@@ -25,7 +25,9 @@ namespace GenericViewModels.Events
                     }
                     else
                     {
+#pragma warning disable CA1303 // Do not pass literals as localized parameters - don't translate exceptions
                         throw new InvalidOperationException("Wrong event type in event list");
+#pragma warning restore CA1303 // Do not pass literals as localized parameters
                     }
                 }
                 else
