@@ -2,7 +2,6 @@
 using System;
 using Xunit;
 
-
 namespace Generic.ViewModels.Tests.Extensions
 {
     public class DateTimeExtensionTest
