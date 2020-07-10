@@ -22,8 +22,19 @@ steps:
   inputs:
     command: 'build'
     projects: 'Generic.ViewModels/Generic.ViewModels.csproj'
+# - task: DotNetCoreCLI@2
+#   inputs:
+#     command: 'test'
+#     projects: 'Generic.ViewModels.Tests/Generic.ViewModels.Tests.csproj'
+#    testRunTitle: 'test generic.viewmodels'
+
 - task: DotNetCoreCLI@2
   inputs:
-    command: 'test'
-    projects: 'Generic.ViewModels.Tests/Generic.ViewModels.Tests.csproj'
-    testRunTitle: 'test generic.viewmodels'
+    command: 'pack'
+    packagesToPack: 'Generic.ViewModels/Generic.ViewJModels.csproj'
+    versioningScheme: 'byBuildNumber'
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
