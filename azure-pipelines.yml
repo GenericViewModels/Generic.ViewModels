@@ -4,10 +4,18 @@
 # https://aka.ms/yaml
 
 variables:
+- name: version.MajorMinor
+  value: '0.3'
+- name: version.Revision
+  value: $[counter(variables['version.MajorMinor'], 0)]
+- name: versionNumber
+  value: '$(version.MajorMinor).$(version.Revision)'
 - name: BuildProject
   value: 'Generic.ViewModels/Generic.ViewModels.csproj'
 - name: TestProject
   value: 'Generic.ViewModels.Tests/Generic.ViewModels.Tests.csproj'
+- name: myx
+  value: '1.0.0-CI-$(Build.BuildNumber)'
 
 trigger:
 - master
@@ -16,6 +24,9 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
+- script: echo $(Build.BuildNumber) # echo
+- script: echo $(myx)
+
 - task: DotNetCoreCLI@2
   inputs:
     command: 'build'
@@ -31,6 +42,8 @@ steps:
     command: 'pack'
     packagesToPack: $(BuildProject)
     versioningScheme: 'byBuildNumber'
+# '(BuildDefinitionName)_(Year:yyyy).(Month).(Month).(DayOfMonth)$(Rev:.r)'.
+
 - task: PublishBuildArtifacts@1
   inputs:
     PathtoPublish: '$(Build.ArtifactStagingDirectory)'
