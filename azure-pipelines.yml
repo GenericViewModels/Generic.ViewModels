@@ -26,4 +26,4 @@ steps:
   inputs:
     command: 'test'
     projects: 'Generic.ViewModels.Tests/Generic.ViewModels.Tests.csproj'
-    testRunTitle: 'test generic.viewmodels''
+    testRunTitle: 'test generic.viewmodels'
