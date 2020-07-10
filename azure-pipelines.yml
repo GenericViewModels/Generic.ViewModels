@@ -9,20 +9,8 @@ variables:
   Revision: $(Build.BuildNumber)
   BuildProject: 'Generic.ViewModels/Generic.ViewModels.csproj'
   TestProject: 'Generic.ViewModels.Tests/Generic.ViewModels.Tests.csproj'
+  NuGetFeed: 'https://cninnovation.pkgs.visualstudio.com/GenericViewModelsFeed/_packaging/GenericViewModels/nuget/v3/index.json'
   
-# - name: version.MajorMinor
-#   value: '0.3'
-# - name: version.Revision
-#   value: $[counter(variables['version.MajorMinor'], 0)]
-# - name: versionNumber
-#   value: '$(version.MajorMinor).$(version.Revision)'
-# - name: BuildProject
-#   value: 'Generic.ViewModels/Generic.ViewModels.csproj'
-# - name: TestProject
-#   value: 'Generic.ViewModels.Tests/Generic.ViewModels.Tests.csproj'
-# - name: myx
-#   value: '1.0.0-CI-$(Build.BuildNumber)'
-
 trigger:
 - master
 
@@ -49,11 +37,10 @@ steps:
 #    versioningScheme: 'byBuildNumber'
 # '(BuildDefinitionName)_(Year:yyyy).(Month).(Month).(DayOfMonth)$(Rev:.r)'.
 
-- task: PublishBuildArtifacts@1
+- task: DotNetCoreCLI@2
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
+    nuGetFeedType: 'internal'
+    publishVstsFeed: 'd9420201-74ff-4ca9-ba65-6d989dea9334/7407cb8a-b221-4f8d-8a8f-dcfcbbf7355b'
 
-- publish: '$(Build.ArtifactStagingDirectory)'
-  artifact: 
