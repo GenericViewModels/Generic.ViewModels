@@ -12,7 +12,7 @@ variables:
   NuGetFeed: 'https://cninnovation.pkgs.visualstudio.com/GenericViewModelsFeed/_packaging/GenericViewModels/nuget/v3/index.json'
   
 trigger:
-- master
+- main
 
 pool:
   vmImage: 'ubuntu-latest'
