@@ -121,7 +121,11 @@ namespace GenericViewModels.ViewModels
             }
         }
 
-        protected abstract void OnEditCommandChanges();
+        /// <summary>
+        /// This method is invoked if the set accessor of IsEditMode changes the property
+        /// Override to call the change notification on the commands that depend on the edit mode
+        /// </summary>
+        protected virtual void OnEditCommandChanges() { }
 
         #endregion
 
