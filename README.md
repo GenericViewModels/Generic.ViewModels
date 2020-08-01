@@ -2,6 +2,8 @@
 
 The library **Generic.ViewModels** offers core MVVM functionality and adds generic view-models that are typically used showing lists of items and editing items.
 
+Add this link to your NuGet package feeds to use early versions of this library: https://pkgs.dev.azure.com/cninnovation/GenericViewModelsFeed/_packaging/GenericViewModels/nuget/v3/index.json
+
 ## Getting Started
 
 Please read the [documentation with samples](https://github.com/GenericViewModels/Generic.ViewModels-Documentation) for information about using the library.
