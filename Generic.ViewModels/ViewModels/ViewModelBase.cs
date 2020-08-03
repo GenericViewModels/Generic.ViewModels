@@ -1,5 +1,6 @@
 using GenericViewModels.Core;
 using GenericViewModels.Services;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
@@ -12,10 +13,12 @@ namespace GenericViewModels.ViewModels
     {
         protected AsyncEventSlim InitializedEvent { get; } = new AsyncEventSlim();
         protected IShowProgressInfo ShowProgressInfo { get; }
+        protected ILogger Logger { get; }
 
-        public ViewModelBase(IShowProgressInfo showProgressInfo)
+        public ViewModelBase(IShowProgressInfo showProgressInfo, ILoggerFactory loggerFactory)
         {
             ShowProgressInfo = showProgressInfo ?? throw new ArgumentNullException(nameof(showProgressInfo));
+            Logger = loggerFactory?.CreateLogger(GetType()) ?? throw new ArgumentNullException(nameof(loggerFactory));
 
             ShowProgressInfo.ProgressInformationChanged += (sender, name) =>
             {

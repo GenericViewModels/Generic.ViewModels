@@ -15,7 +15,6 @@ namespace GenericViewModels.ViewModels
         where TItem : class
     {
         protected IItemsService<TItem> ItemsService { get; }
-        protected ILogger Logger { get; }
 
         private readonly IItemToViewModelMap<TItem, TItemViewModel> _viewModelMap;
 
@@ -24,11 +23,10 @@ namespace GenericViewModels.ViewModels
             IItemToViewModelMap<TItem, TItemViewModel> viewModelMap,
             IShowProgressInfo showProgressInfo,
             ILoggerFactory loggerFactory)
-            : base(showProgressInfo)
+            : base(showProgressInfo, loggerFactory)
         {
             ItemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
             _viewModelMap = viewModelMap ?? throw new ArgumentNullException(nameof(viewModelMap));
-            Logger = loggerFactory?.CreateLogger(GetType()) ?? throw new ArgumentNullException(nameof(loggerFactory));
 
             ItemsService.SelectedItemChanged += ItemsService_SelectedItemChanged;
 

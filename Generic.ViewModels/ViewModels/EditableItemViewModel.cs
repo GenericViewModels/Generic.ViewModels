@@ -14,16 +14,14 @@ namespace GenericViewModels.ViewModels
         private const string InvalidBeginEdit = "it's invalid calling BeginEdit before selecting an item";
 
         protected IItemsService<TItem> ItemsService { get; }
-        protected ILogger Logger { get; }
 
         public EditableItemViewModel(
             IItemsService<TItem> itemsService,
             IShowProgressInfo showProgressInfo,
             ILoggerFactory loggerFactory)
-            : base(showProgressInfo)
+            : base(showProgressInfo, loggerFactory)
         {
             ItemsService = itemsService ?? throw new ArgumentNullException(nameof(itemsService));
-            Logger = loggerFactory?.CreateLogger(GetType()) ?? throw new ArgumentNullException(nameof(loggerFactory));
 
             ItemsService.SelectedItemChanged += OnSelectedItemChanged;
 
