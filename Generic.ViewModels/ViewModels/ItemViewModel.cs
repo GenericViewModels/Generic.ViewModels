@@ -1,4 +1,5 @@
 ﻿using GenericViewModels.Services;
+using Microsoft.Extensions.Logging;
 
 namespace GenericViewModels.ViewModels
 {
@@ -9,13 +10,17 @@ namespace GenericViewModels.ViewModels
     public abstract class ItemViewModel<T> : ViewModelBase, IItemViewModel<T>
         where T : class
     {
-        public ItemViewModel(IShowProgressInfo showProgressInfo)
-            : base(showProgressInfo)
+        public ItemViewModel(IShowProgressInfo showProgressInfo,
+            ILoggerFactory loggerFactory)
+            : base(showProgressInfo, loggerFactory)
         {
         }
 
-        public ItemViewModel(T item, IShowProgressInfo showProgressInfo) 
-            : base(showProgressInfo)
+        public ItemViewModel(
+            T item, 
+            IShowProgressInfo showProgressInfo,
+            ILoggerFactory loggerFactory) 
+            : base(showProgressInfo, loggerFactory)
             => _item = item;
 
         private T? _item;
