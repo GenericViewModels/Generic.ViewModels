@@ -26,5 +26,19 @@ namespace GenericViewModels.Diagnostics
 
             return $"{type.Name}: Selected item changed: {item}";
         }
+
+        public static string ReceivedHttp(Type type)
+        {
+            if (type == null) throw new ArgumentNullException(nameof(type));
+
+            return $"{type.Name}: received";
+        }
+
+        public static string EditModeChange(Type type, bool isEdit)
+        {
+            if (type == null) throw new ArgumentNullException(nameof(type));
+
+            return $"{type.Name}: edit mode changed to {isEdit}";
+        }
     }
 }

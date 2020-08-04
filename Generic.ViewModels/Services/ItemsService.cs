@@ -13,7 +13,6 @@ namespace GenericViewModels.Services
     {
         protected AsyncEventSlim IsInitialized { get; } = new AsyncEventSlim();
         private readonly ISharedItems<T> _sharedItems;
-        private readonly ILogger _logger;
 
         public event EventHandler<EventArgs> ItemsRefreshed
         {
@@ -34,10 +33,12 @@ namespace GenericViewModels.Services
         public ItemsService(ISharedItems<T> sharedItemsService, ILoggerFactory loggerFactory)
         {
             _sharedItems = sharedItemsService ?? throw new ArgumentNullException(nameof(sharedItemsService));
-            _logger = loggerFactory.CreateLogger(GetType()) ?? throw new ArgumentNullException(nameof(loggerFactory));
+            Logger = loggerFactory.CreateLogger(GetType()) ?? throw new ArgumentNullException(nameof(loggerFactory));
 
             _sharedItems.PropertyChanged += SharedItems_PropertyChanged;
         }
+
+        protected ILogger Logger { get; }
 
         public void Dispose()
         {
@@ -58,7 +59,7 @@ namespace GenericViewModels.Services
         {
             if (e.PropertyName == "SelectedItem" || e.PropertyName == "IsEditMode")
             {
-                _logger.LogTrace(LoggingMessages.PropertyChangedEvent(typeof(ItemsService<T>), e.PropertyName));
+                Logger.LogTrace(LoggingMessages.PropertyChangedEvent(typeof(ItemsService<T>), e.PropertyName));
 
                 RaisePropertyChanged(e.PropertyName);
             }
@@ -99,7 +100,11 @@ namespace GenericViewModels.Services
         public virtual bool IsEditMode
         {
             get => _sharedItems.IsEditMode;
-            set => _sharedItems.IsEditMode = value;
+            set
+            {
+                _sharedItems.IsEditMode = value;
+                Logger.LogTrace(LoggingMessages.EditModeChange(typeof(ItemsService<T>), value));
+            }
         }
 
         /// <summary>
@@ -123,7 +128,7 @@ namespace GenericViewModels.Services
         /// <returns>A <see cref="Task"/></returns>
         public virtual Task RefreshAsync()
         {
-            _logger.LogTrace(LoggingMessages.Refresh(typeof(ItemsService<T>)));
+            Logger.LogTrace(LoggingMessages.Refresh(typeof(ItemsService<T>)));
             RaiseItemsRefreshed();
             return Task.CompletedTask;
         }
