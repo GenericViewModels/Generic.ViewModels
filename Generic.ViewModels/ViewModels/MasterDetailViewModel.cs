@@ -10,6 +10,14 @@ using System.Threading.Tasks;
 
 namespace GenericViewModels.ViewModels
 {
+    /// <summary>
+    /// Derive a view-model from this class for master/detail functionality. 
+    /// Items are wrapped in a view-model type for commands in a list (<see cref="Items"/>)
+    /// <see cref="SelectedItem"/> returns the view-model type of the currently selected item
+    /// 
+    /// </summary>
+    /// <typeparam name="TItemViewModel">The view-model type for the items</typeparam>
+    /// <typeparam name="TItem">The item type</typeparam>
     public abstract class MasterDetailViewModel<TItemViewModel, TItem> : ViewModelBase
         where TItemViewModel : class, IItemViewModel<TItem>
         where TItem : class
@@ -29,6 +37,13 @@ namespace GenericViewModels.ViewModels
             _viewModelMap = viewModelMap ?? throw new ArgumentNullException(nameof(viewModelMap));
 
             ItemsService.SelectedItemChanged += ItemsService_SelectedItemChanged;
+            PropertyChanged += (sender, e) =>
+            {
+                if (e.PropertyName == nameof(SelectedItem))
+                {
+                    OnSelectedItemChanged(this, new SelectedItemEventArgs<TItemViewModel>(SelectedItem));
+                }
+            };
 
             ItemsService.Items.CollectionChanged += (sender, e) =>
             {
@@ -38,6 +53,10 @@ namespace GenericViewModels.ViewModels
             ItemsService.PropertyChanged += ItemsService_PropertyChanged;
         }
 
+        /// <summary>
+        /// Cleans up the associated event handlers
+        /// </summary>
+        /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -53,25 +72,56 @@ namespace GenericViewModels.ViewModels
             {
                 // fire property change on IsReadMode which is used to hide the list in the UI
                 RaisePropertyChanged(nameof(IsReadMode));
+                RaisePropertyChanged(nameof(IsEditMode));
             }
         }
 
         public bool IsReadMode => !ItemsService.IsEditMode;
+        public bool IsEditMode => ItemsService.IsEditMode;
 
+        // forwards the property change event to SelectedItem
         private void ItemsService_SelectedItemChanged(object sender, SelectedItemEventArgs<TItem> e)
         {
-            Logger.LogTrace(LoggingMessages.SelectedItemChanged(typeof(MasterDetailViewModel<TItemViewModel, TItem>), e.Item));
             RaisePropertyChanged(nameof(SelectedItem));
         }
 
+        /// <summary>
+        /// Override to react to selected item change events.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"><see cref="SelectedItemEventArgs{T}"/></param>
+        protected virtual void OnSelectedItemChanged(object sender, SelectedItemEventArgs<TItemViewModel> e)
+        {
+            if (e == null) throw new ArgumentNullException(nameof(e));
+
+            Logger.LogDebug(LoggingMessages.SelectedItemChanged(typeof(MasterDetailViewModel<TItemViewModel, TItem>), e.Item));
+        }
+
+        /// <summary>
+        /// Invokes <see cref="RefreshAsync" on initialization/>
+        /// Override for other intitialization.
+        /// </summary>
+        /// <returns><see cref="Task"/></returns>
         protected override Task InitCoreAsync() => RefreshAsync();
 
+        /// <summary>
+        /// Returns a view-model from the <see cref="ItemToViewModelMap{T, TViewModel}" cache/>
+        /// </summary>
+        /// <param name="item">the item to return the view-model</param>
+        /// <returns><see cref="TItemViewModel"/></returns>
         protected virtual TItemViewModel? ToViewModel(TItem? item) => 
             _viewModelMap.GetViewModel(item);
 
+        /// <summary>
+        /// Returns items in the view-model representation.
+        /// </summary>
         public virtual IEnumerable<TItemViewModel?> Items => 
             ItemsService.Items.Select(item => ToViewModel(item));
 
+        /// <summary>
+        /// Returns the view-model of the currently selected item.
+        /// Use the set accessor to set the selected item using the associated <see cref="ItemsService{T}"/>
+        /// </summary>
         public virtual TItemViewModel? SelectedItem
         {
             get => ToViewModel(ItemsService.SelectedItem);
@@ -85,6 +135,11 @@ namespace GenericViewModels.ViewModels
             }
         }
 
+        /// <summary>
+        /// Call to load and refresh items 
+        /// Override <see cref="OnRefreshCoreAsync" /> to implement 
+        /// </summary>
+        /// <returns></returns>
         protected async Task RefreshAsync()
         {
             Logger.LogTrace(LoggingMessages.Refresh(typeof(MasterDetailViewModel<TItemViewModel, TItem>)));
@@ -94,9 +149,10 @@ namespace GenericViewModels.ViewModels
         }
 
         /// <summary>
-        /// Invokes RefreshAsync of the IItemsService service. Override for more refresh needs.
+        /// Invokes RefreshAsync of the IItemsService service. Override for loading other data in your view-model.
+        /// Invoked by <see cref="RefreshAsync"/>
         /// </summary>
-        /// <returns>> <see cref="Task"/></returns>
+        /// <returns><see cref="Task"/> to signal completion.</returns>
         protected virtual async Task OnRefreshCoreAsync()
         {
             await ItemsService.RefreshAsync();

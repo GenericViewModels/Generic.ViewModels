@@ -8,6 +8,10 @@ using System.Threading.Tasks;
 
 namespace GenericViewModels.ViewModels
 {
+    /// <summary>
+    /// Derive from this class with view-models that need edit functionality supporting <see cref="IEditableObject"/>
+    /// </summary>
+    /// <typeparam name="TItem">The type that should be edited using this view-model</typeparam>
     public abstract class EditableItemViewModel<TItem> : ItemViewModel<TItem>, IEditableObject
         where TItem : class
     {
